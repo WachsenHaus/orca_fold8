@@ -7,8 +7,10 @@ import {
   FileText,
   GitBranch,
   Globe,
+  MessageSquare,
   MoreHorizontal,
-  Plus
+  Plus,
+  SquareTerminal
 } from 'lucide-react-native'
 import { MobileSessionHeaderIconButton } from './MobileSessionHeaderIconButton'
 import { triggerMediumImpact } from '../platform/haptics'
@@ -22,6 +24,7 @@ import { colors } from '../theme/mobile-theme'
 import { QuickCommandsTabButton } from './QuickCommandsTabButton'
 import { styles } from './mobile-session-styles'
 import { useKeyboardPersistingTaps } from '../platform/keyboard-persisting-taps'
+import { resolveMobileNativeChatViewToggle } from './mobile-native-chat-toggle-action'
 import type { MobileSessionController } from './use-mobile-session-controller'
 
 export function MobileSessionHeader({ controller }: { controller: MobileSessionController }) {
@@ -57,9 +60,18 @@ export function MobileSessionHeader({ controller }: { controller: MobileSessionC
     showConnectionRetry,
     terminalSummary,
     handlePanelTap,
-    showHeaderMoreButton
+    showHeaderMoreButton,
+    activeSessionTab,
+    nativeChatController,
+    nativeChatTranscriptIsLocalReadable,
+    toggleTabChatView
   } = controller
   const tabBarKeepsKeyboard = useKeyboardPersistingTaps('handled')
+  const chatViewToggle = resolveMobileNativeChatViewToggle({
+    tab: activeSessionTab,
+    isTabChatView: nativeChatController.isTabChatView,
+    nativeChatTranscriptIsLocalReadable
+  })
   return (
     <SafeAreaView style={styles.sessionChrome} edges={['top']}>
       <View style={styles.sessionTopBar}>
@@ -94,6 +106,15 @@ export function MobileSessionHeader({ controller }: { controller: MobileSessionC
             </Text>
           </Pressable>
         </View>
+        {chatViewToggle ? (
+          <MobileSessionHeaderIconButton
+            accessibilityLabel={
+              chatViewToggle.isChat ? 'Switch to terminal view' : 'Switch to chat view'
+            }
+            icon={chatViewToggle.isChat ? SquareTerminal : MessageSquare}
+            onPress={() => toggleTabChatView(chatViewToggle.tabId)}
+          />
+        ) : null}
         {!isFloatingWorkspaceRoute && (
           <MobileSessionHeaderIconButton
             active={activePanel === 'files'}
