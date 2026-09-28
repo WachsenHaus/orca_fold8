@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
 import type { FlatList, NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
+import { SCROLL_COMMAND_PRECEDES_MOUNT } from './native-chat-scroll-mount-order'
 
 /** Distance from the bottom, in points, still treated as "at the tail". */
 const AT_TAIL_SLOP = 80
+
+/** Frames to wait before the settle pin, so the grown content is mounted first. */
+const SETTLE_PIN_FRAMES = 2
 
 function isAtTail(event: NativeScrollEvent): boolean {
   const { contentOffset, contentSize, layoutMeasurement } = event
@@ -41,6 +45,11 @@ export type MobileNativeChatTailFollow<TItem> = {
  *  scroll reports metrics like any other, so letting metrics decide intent let
  *  the view argue with itself. Only the user's own gestures and explicit jumps
  *  move intent; metrics only decide where a *released* gesture leaves us.
+ *
+ *  Android (Fabric) runs a scroll command before the mount that grows the
+ *  content, and its ScrollView clamps to the old height — each pin landed short
+ *  of the bottom and the next chunk caught it up, so streaming bobbed up and
+ *  down. A trailing pin after the mount lands on the real bottom.
  */
 export function useMobileNativeChatTailFollow<TItem>(args: {
   /** Guards `scrollToEnd` against an empty list. */
@@ -55,6 +64,8 @@ export function useMobileNativeChatTailFollow<TItem>(args: {
   const atTailRef = useRef(true)
   const userScrollActiveRef = useRef(false)
   const userScrollSettleFrameRef = useRef<number | null>(null)
+  const contentHeightRef = useRef(0)
+  const settlePinFrameRef = useRef<number | null>(null)
 
   // Single writer, so the event-time ref and the render flag cannot disagree.
   const setFollowing = useCallback((next: boolean) => {
@@ -73,21 +84,57 @@ export function useMobileNativeChatTailFollow<TItem>(args: {
     setAtTailFlag(next)
   }, [])
 
+  const clearSettlePin = useCallback(() => {
+    if (settlePinFrameRef.current !== null) {
+      cancelAnimationFrame(settlePinFrameRef.current)
+      settlePinFrameRef.current = null
+    }
+  }, [])
+
+  const scheduleSettlePin = useCallback(() => {
+    if (!SCROLL_COMMAND_PRECEDES_MOUNT || settlePinFrameRef.current !== null) {
+      return
+    }
+    const waitFrames = (remaining: number) => {
+      settlePinFrameRef.current = requestAnimationFrame(() => {
+        if (remaining > 1) {
+          waitFrames(remaining - 1)
+          return
+        }
+        settlePinFrameRef.current = null
+        if (!followingRef.current) {
+          return
+        }
+        // Past-the-end offsets clamp natively to the true bottom.
+        const height = contentHeightRef.current
+        if (height > 0) {
+          listRef.current?.scrollToOffset({ animated: false, offset: height })
+        } else {
+          listRef.current?.scrollToEnd({ animated: false })
+        }
+      })
+    }
+    waitFrames(SETTLE_PIN_FRAMES)
+  }, [])
+
   const pinToTail = useCallback(() => {
     if (!followingRef.current || !hasItems) {
       return
     }
     listRef.current?.scrollToEnd({ animated: false })
-  }, [hasItems])
+    scheduleSettlePin()
+  }, [hasItems, scheduleSettlePin])
 
   const pinToTailAfterContentResize = useCallback(
     (_width: number, height: number) => {
+      contentHeightRef.current = height
       if (!followingRef.current || !hasItems) {
         return
       }
       listRef.current?.scrollToOffset({ animated: false, offset: height })
+      scheduleSettlePin()
     },
-    [hasItems]
+    [hasItems, scheduleSettlePin]
   )
 
   const clearUserScrollSettle = useCallback(() => {
@@ -112,9 +159,10 @@ export function useMobileNativeChatTailFollow<TItem>(args: {
 
   const beginUserScroll = useCallback(() => {
     clearUserScrollSettle()
+    clearSettlePin()
     userScrollActiveRef.current = true
     setFollowing(false)
-  }, [clearUserScrollSettle, setFollowing])
+  }, [clearUserScrollSettle, clearSettlePin, setFollowing])
 
   const finishUserScroll = useCallback(
     (finishedAtTail: boolean) => {
@@ -161,12 +209,19 @@ export function useMobileNativeChatTailFollow<TItem>(args: {
 
   const detachFromTail = useCallback(() => {
     clearUserScrollSettle()
+    clearSettlePin()
     userScrollActiveRef.current = false
     setAtTail(false)
     setFollowing(false)
-  }, [clearUserScrollSettle, setAtTail, setFollowing])
+  }, [clearUserScrollSettle, clearSettlePin, setAtTail, setFollowing])
 
-  useEffect(() => clearUserScrollSettle, [clearUserScrollSettle])
+  useEffect(
+    () => () => {
+      clearUserScrollSettle()
+      clearSettlePin()
+    },
+    [clearUserScrollSettle, clearSettlePin]
+  )
 
   return {
     listRef,
