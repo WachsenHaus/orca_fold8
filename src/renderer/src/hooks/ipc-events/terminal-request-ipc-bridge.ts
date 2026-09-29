@@ -78,7 +78,10 @@ export function registerTerminalRequestIpcBridge(unsubs: (() => void)[]): void {
                 recordInteraction: false,
                 ...(data.cwd ? { startupCwd: data.cwd } : {})
               }
-        const tab = store.createTab(worktreeId, data.targetGroupId, data.shellOverride, tabOptions)
+        const tab = store.createTab(worktreeId, data.targetGroupId, data.shellOverride, {
+          ...tabOptions,
+          ...(data.creationSource ? { creationSource: data.creationSource } : {})
+        })
         if (!shouldActivate) {
           // Why: renderer-backed Codex startup must mount its new TerminalPane without switching UI or connecting every saved tab.
           requestBackgroundTerminalWorktreeMount({ worktreeId, tabIds: [tab.id] })

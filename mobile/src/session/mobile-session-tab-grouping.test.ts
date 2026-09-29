@@ -38,6 +38,27 @@ function orchestrated(id: string): MobileSessionTab {
 }
 
 describe('isOrcaAgentSessionTab', () => {
+  it('groups automatic tabs without requiring a live orchestration status', () => {
+    expect(isOrcaAgentSessionTab(terminal('cli', { creationSource: 'automation' }))).toBe(true)
+    expect(
+      isOrcaAgentSessionTab({
+        type: 'agent-session',
+        id: 'chat',
+        title: 'Codex',
+        sessionId: 'session',
+        agent: 'codex',
+        isActive: false,
+        creationSource: 'automation'
+      })
+    ).toBe(true)
+  })
+
+  it('keeps a manually created tab outside the group even after agent activity', () => {
+    const tab = { ...orchestrated('manual'), creationSource: 'manual' as const }
+    expect(isOrcaAgentSessionTab(tab)).toBe(false)
+    expect(groupMobileSessionTabs([tab], {}, new Set(['manual'])).stripTabs).toEqual([tab])
+  })
+
   it('matches only terminals with an orchestration dispatch', () => {
     expect(isOrcaAgentSessionTab(orchestrated('w1'))).toBe(true)
     expect(isOrcaAgentSessionTab(terminal('t1'))).toBe(false)

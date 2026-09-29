@@ -14,8 +14,11 @@ export function isMobileSessionTabPinned(
   return 'isPinned' in tab && tab.isPinned === true
 }
 
-/** A terminal an orchestrating agent spawned through the Orca CLI (`orca orchestration worker-start`). */
+/** Creator provenance survives agent completion and applies to every tab type. */
 export function isOrcaAgentSessionTab(tab: MobileSessionTab): boolean {
+  if (tab.creationSource !== undefined) {
+    return tab.creationSource === 'automation'
+  }
   return tab.type === 'terminal' && tab.agentStatus?.orchestration != null
 }
 
@@ -37,7 +40,10 @@ export function groupMobileSessionTabs(
   for (const tab of tabs) {
     if (isMobileSessionTabPinned(tab, pinOverrides)) {
       pinned.push(tab)
-    } else if (orcaAgentTabIds.has(tab.id)) {
+    } else if (
+      isOrcaAgentSessionTab(tab) ||
+      (tab.creationSource === undefined && orcaAgentTabIds.has(tab.id))
+    ) {
       orcaAgentTabs.push(tab)
     } else {
       unpinned.push(tab)

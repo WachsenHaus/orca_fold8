@@ -7,6 +7,19 @@ vi.mock('lucide-react-native', () => ({
 }))
 
 describe('resolveMobileNativeChatViewToggle', () => {
+  it('toggles both ways for Codex detected in a manually opened shell', () => {
+    const tab = { type: 'terminal', id: 'shell', foregroundAgent: 'codex' }
+    for (const isChat of [false, true]) {
+      expect(
+        resolveMobileNativeChatViewToggle({
+          tab,
+          isTabChatView: () => isChat,
+          nativeChatTranscriptIsLocalReadable: false
+        })
+      ).toEqual({ tabId: 'shell', isChat })
+    }
+  })
+
   const claudeTab = { type: 'terminal', id: 'tab-1', terminal: 'pty-1', launchAgent: 'claude' }
 
   it('reports the current view of a chat-capable terminal tab', () => {

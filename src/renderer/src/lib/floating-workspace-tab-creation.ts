@@ -26,7 +26,9 @@ export async function createFloatingWorkspaceTerminalTab(
 
   // Why: the floating workspace is a local scratchpad; a focused remote runtime
   // must not own its SSH/tmux terminals or prune them via session snapshots.
-  const tab = store.createTab(FLOATING_TERMINAL_WORKTREE_ID, targetGroupId, shellOverride)
+  const tab = store.createTab(FLOATING_TERMINAL_WORKTREE_ID, targetGroupId, shellOverride, {
+    creationSource: 'manual'
+  })
   focusTerminalTabSurface(tab.id)
   return tab
 }

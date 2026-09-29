@@ -1,4 +1,5 @@
 // @ts-nocheck -- mechanically split from OrcaRuntimeService; behavior is covered by AST equivalence and characterization tests.
+import type { TabCreationSource } from '../../shared/tab-creation-source'
 import { OrcaRuntimeWithResolveMobileSessionTerminalCommand } from './orca-runtime-resolve-mobile-session-terminal-command'
 import type { WorktreeStartupLaunch } from '../../shared/worktree/launch-types'
 import type { TuiAgent } from '../../shared/tui-agent'
@@ -29,6 +30,7 @@ export class OrcaRuntimeWithCreateRuntimeOwnedMobileSessionTerminal extends Orca
       envToDelete?: string[]
       startupCommandDelivery?: WorktreeStartupLaunch['startupCommandDelivery']
       identity?: { tabId: string; leafId: string; sessionId?: string }
+      creationSource?: TabCreationSource
       launchAgent?: TuiAgent
       viewMode?: 'terminal' | 'chat'
       targetGroupId?: string
@@ -51,6 +53,7 @@ export class OrcaRuntimeWithCreateRuntimeOwnedMobileSessionTerminal extends Orca
       envToDelete: opts.envToDelete,
       ...(opts.launchConfig ? { launchConfig: opts.launchConfig } : {}),
       ...(opts.launchAgent ? { launchAgent: opts.launchAgent } : {}),
+      ...(opts.creationSource ? { creationSource: opts.creationSource } : {}),
       ...(opts.viewMode ? { viewMode: opts.viewMode } : {}),
       startupCommandDelivery: opts.startupCommandDelivery,
       ...(opts.identity
@@ -101,6 +104,7 @@ export class OrcaRuntimeWithCreateRuntimeOwnedMobileSessionTerminal extends Orca
       title: terminal.title ?? livePty.pty.title ?? 'Terminal',
       ...(cwd ? { startupCwd: cwd } : {}),
       ...(opts.launchAgent ? { launchAgent: opts.launchAgent } : {}),
+      ...(opts.creationSource ? { creationSource: opts.creationSource } : {}),
       ...(opts.viewMode ? { viewMode: opts.viewMode } : {}),
       parentLayout,
       isActive: activate

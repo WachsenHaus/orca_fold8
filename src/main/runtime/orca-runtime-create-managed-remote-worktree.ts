@@ -30,7 +30,8 @@ export class OrcaRuntimeWithCreateManagedRemoteWorktree extends OrcaRuntimeWithC
       canSpawn: () => Boolean(this.ptyController?.spawn),
       markTrusted: (agent, connectionId, path) =>
         this.markRemoteWorkspaceTrustedForAgent(agent, connectionId, path),
-      createTerminal: (selector, options) => this.createTerminal(selector, options),
+      createTerminal: (selector, options) =>
+        this.createTerminal(selector, { ...options, creationSource: 'automation' }),
       pasteDraft: (handle, draft) => this.pasteStartupDraftWhenReady(handle, draft),
       sendFollowup: (handle, followup) => this.sendStartupFollowupWhenReady(handle, followup),
       provision: (options) => this.provisionManagedWorktreeTerminals(options),

@@ -1,3 +1,4 @@
+import type { TabCreationSource } from '../../shared/tab-creation-source'
 import { ipcRenderer } from 'electron'
 import type { TerminalPaneSplitSource } from '../../shared/feature-education-telemetry'
 import type { TerminalTabCreateReply } from '../../shared/terminal-reveal-identity'
@@ -24,6 +25,7 @@ export const uiTerminalAndSessionTabsApi = {
       launchConfig?: SleepingAgentLaunchConfig
       resumeProviderSession?: AgentProviderSessionMetadata
       launchToken?: string
+      creationSource?: TabCreationSource
       launchAgent?: TuiAgent
       viewMode?: 'terminal' | 'chat'
       title?: string
@@ -50,6 +52,7 @@ export const uiTerminalAndSessionTabsApi = {
         launchConfig?: SleepingAgentLaunchConfig
         resumeProviderSession?: AgentProviderSessionMetadata
         launchToken?: string
+        creationSource?: TabCreationSource
         launchAgent?: TuiAgent
         viewMode?: 'terminal' | 'chat'
         title?: string

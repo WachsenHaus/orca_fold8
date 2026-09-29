@@ -159,8 +159,9 @@ const HEAD_CONTENT_HOOK_SHA256 = '9c3b612fef3f370d66873aefdbe1d701f20cb64ded31fe
 // `handleCreateTerminal`, whose send became `sessionTabCreateTerminal` and whose `response.ok`
 // branch became that operation's own throw-the-host-message acceptance. Refreshed for negotiated
 // optimistic placement, which defers to legacy host snapshots when ownership paths disagree.
+// Codex creation now retains a terminal for the two views.
 const HEAD_NESTED_FUNCTION_SHA256 =
-  '923b5ea7fe3330cbd98213b72736bf1f653115ddb5492cb8eb8306d8ca4f28e8'
+  'e3bf6c6edd5312f6660f0546db4b9283c6ceecd41de88c69d22eeeb5d0a9a36d'
 // -1 registration and -1 removal: the Markdown actions' `BackHandler` pair is `useBackClaim`'s.
 const HEAD_NATIVE_REGISTRATION_SHA256 =
   '87d4599f475575131d4d5daa20f0dac579ca6c829353cbb654206ea6965dadae'
@@ -207,8 +208,9 @@ const HEAD_TIMER_CLEANUP_SHA256 = 'c73f1d1c2cc89642f3d727d6f3b6b81860a9d6f342345
 // the ref is undefined. 532 -> 531: the live input's reopen flag reads the host OS, not an 'android' literal.
 // 531 -> 529: the markdown status line moved to `markdownReaderStatusText`.
 // 531 -> 533: the merged header toggle adds its terminal/chat accessibility labels.
+// 533 -> 534: explicit 'codex' terminal-routing condition.
 const HEAD_RUNTIME_STRING_SHA256 =
-  'bb1e55ec6703e0ae2a69fb3910fe85a15fe35c355612b9be9d7840c6291d1460'
+  'a62af803738cc3c951fbf80cc9065a4731ad5a5791c6d022007e80426ee2fda0'
 // Moved by both of the dock's fields: their refs, and the live one's submit handler, are the seam's now;
 // their keyboard type and remount key read the host OS.
 // Moved again when the terminal frame kept its laid-out width unrounded, for every fit.
@@ -660,7 +662,7 @@ describe('mobile session route extraction parity', () => {
 
   it('preserves runtime strings, styles, and the expanded JSX tree', () => {
     const strings = readRuntimeStrings()
-    expect(strings).toHaveLength(533)
+    expect(strings).toHaveLength(534)
     expect(hash(strings)).toBe(HEAD_RUNTIME_STRING_SHA256)
     const jsx = readJsxFacts(readDefinitions())
     expect(jsx.host).toHaveLength(128)

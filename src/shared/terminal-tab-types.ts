@@ -1,5 +1,6 @@
 import type { AiVaultSessionTitle } from './ai-vault-session-title'
 import type { TuiAgent } from './tui-agent'
+import type { TabCreationSource } from './tab-creation-source'
 
 /** Why recovery reasons live in the shared row type: the tab row carries the
  *  recovery ledger, and the ledger records which reason it last acted on. */
@@ -55,6 +56,7 @@ export type TerminalTabRecoveryLedger = {
 
 // ─── Terminal Tab (legacy — used by persistence and TerminalContentSlice) ─
 export type TerminalTab = {
+  creationSource?: TabCreationSource
   id: string
   ptyId: string | null
   worktreeId: string

@@ -42,7 +42,9 @@ export function registerTabLifecycleIpcBridge(unsubs: (() => void)[]): void {
         if (outcome.status === 'created' || isWebRuntimeSessionActive(environmentId)) {
           return
         }
-        const newTab = store.createTab(worktreeId)
+        const newTab = store.createTab(worktreeId, undefined, undefined, {
+          creationSource: 'manual'
+        })
         store.setActiveTabType('terminal', worktreeId)
         // Why: mirror Terminal.tsx handleNewTab so a new tab appends at the end, not index 0, when tabBarOrder is unset.
         const freshStore = useAppStore.getState()

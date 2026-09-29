@@ -1,3 +1,4 @@
+import type { TabCreationSource } from '../../../shared/tab-creation-source'
 import type { AgentSessionRecord } from '../../../shared/agent-session-record'
 
 /**
@@ -13,7 +14,8 @@ export function setStructuredAgentSessionTabVisibility(
         setSessionTabVisibility: (
           sessionId: string,
           visible: boolean,
-          tabId?: string
+          tabId?: string,
+          creationSource?: TabCreationSource
         ) => Promise<void>
       }
     }
@@ -21,14 +23,15 @@ export function setStructuredAgentSessionTabVisibility(
   },
   sessionId: string,
   visible: boolean,
-  tabId?: string
+  tabId?: string,
+  creationSource?: TabCreationSource
 ): Promise<void> {
   if (!visible) {
     void host.restartResume.dismiss([sessionId]).catch(() => {
       console.warn('[structured-agent-session] forgetting recovery records on chat close failed')
     })
   }
-  return host.deps.store.setSessionTabVisibility(sessionId, visible, tabId)
+  return host.deps.store.setSessionTabVisibility(sessionId, visible, tabId, creationSource)
 }
 
 export type StructuredAgentSessionTab = {

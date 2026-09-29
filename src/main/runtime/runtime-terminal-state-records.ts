@@ -1,3 +1,4 @@
+import type { TabCreationSource } from '../../shared/tab-creation-source'
 import type { AgentStatus } from '../../shared/agent-detection'
 import type { AgentStatusState } from '../../shared/agent-status-types'
 import type { SleepingAgentLaunchConfig } from '../../shared/agent-session-resume'
@@ -45,6 +46,7 @@ export type RuntimeLeafRecord = RuntimeSyncedLeaf &
   }
 
 export type RuntimePtyWorktreeRecord = RuntimeTerminalTailState & {
+  creationSource?: TabCreationSource
   ptyId: string
   incarnationId: PtyIncarnationId | null
   worktreeId: string

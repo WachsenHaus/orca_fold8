@@ -96,6 +96,7 @@ export async function adoptAgentBackgroundSessionTab(args: {
   }
   const tab = store.createTab(args.worktreeId, undefined, undefined, {
     id: reservedTabId,
+    creationSource: 'automation',
     initialPtyId: ptyId,
     activate: false,
     recordInteraction: false

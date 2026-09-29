@@ -1,4 +1,5 @@
 // @ts-nocheck -- mechanically split from OrcaRuntimeService; behavior is covered by AST equivalence and characterization tests.
+import type { TabCreationSource } from '../../shared/tab-creation-source'
 import { OrcaRuntimeWithCreateTerminal } from './orca-runtime-create-terminal'
 import type { WorktreeStartupLaunch } from '../../shared/worktree/launch-types'
 import type { TuiAgent } from '../../shared/tui-agent'
@@ -22,6 +23,7 @@ export class OrcaRuntimeWithCreateMobileSessionTerminal extends OrcaRuntimeWithC
       agent?: TuiAgent
       agentPrompt?: string
       launchConfig?: SleepingAgentLaunchConfig
+      creationSource?: TabCreationSource
       launchAgent?: TuiAgent
       viewMode?: 'terminal' | 'chat'
       activate?: boolean

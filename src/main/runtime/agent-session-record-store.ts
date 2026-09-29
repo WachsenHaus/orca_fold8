@@ -1,3 +1,4 @@
+import type { TabCreationSource } from '../../shared/tab-creation-source'
 import { agentSessionRefusalError } from '../../shared/agent-session-wire-refusals'
 import { commitConversationCommandRecord } from './agent-session-conversation-command-record'
 import { setAgentSessionRecordConversationName } from './agent-session-record-conversation-name'
@@ -140,8 +141,18 @@ export class AgentSessionRecordStore {
    * Persist the user-visible tab reference separately from the rollback-sensitive profile tabs.
    * Showing keeps a tab the session already has; `tabId` puts a hidden one back under its old id.
    */
-  setSessionTabVisibility(sessionId: string, visible: boolean, tabId?: string): Promise<void> {
-    return this.transact(() => setAgentSessionTabVisibility(this.state, sessionId, visible, tabId))
+  getSessionTabCreationSource = (sessionId: string): TabCreationSource | undefined =>
+    this.state.sessionTabs?.creationSourceFor(sessionId)
+
+  setSessionTabVisibility(
+    sessionId: string,
+    visible: boolean,
+    tabId?: string,
+    creationSource?: TabCreationSource
+  ): Promise<void> {
+    return this.transact(() =>
+      setAgentSessionTabVisibility(this.state, sessionId, visible, tabId, creationSource)
+    )
   }
 
   listByScope(location: AgentSessionExecutionLocation): AgentSessionRecord[] {

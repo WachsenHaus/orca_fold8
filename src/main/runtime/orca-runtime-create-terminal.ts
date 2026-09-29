@@ -232,6 +232,12 @@ export class OrcaRuntimeWithCreateTerminal extends OrcaRuntimeWithTerminalCreate
             pty.launchToken = launchToken ?? null
             pty.launchIncarnationId = launchToken ? pty.incarnationId : null
             pty.launchAgent = launchOpts.launchAgent ?? null
+            pty.creationSource = launchOpts.creationSource
+            if (launchOpts.creationSource) {
+              this.persistHeadlessSessionTabProps(workspace.id, tabId, {
+                creationSource: launchOpts.creationSource
+              })
+            }
           }
           recordPtySurface(pty, tabId, paneKey, spawnSurfaceClaimSequence(this.graphSequence))
         }
@@ -253,6 +259,7 @@ export class OrcaRuntimeWithCreateTerminal extends OrcaRuntimeWithTerminalCreate
           try {
             await this.notifier.revealTerminalSession(workspace.id, {
               ptyId: result.id,
+              creationSource: launchOpts.creationSource,
               title: launchOpts.title ?? null,
               ...(cwd !== workspace.path ? { cwd } : {}),
               ...(effectiveLaunchConfig ? { launchConfig: effectiveLaunchConfig } : {}),

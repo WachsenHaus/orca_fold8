@@ -14,6 +14,7 @@ describe('ensureWorktreeHasInitialTerminal', () => {
     ensureWorktreeHasInitialTerminal(store, 'wt-1')
 
     expect(store.createTab).toHaveBeenCalledWith('wt-1', undefined, undefined, {
+      creationSource: 'automation',
       pendingActivationSpawn: true
     })
     expect(store.setActiveTab).toHaveBeenCalledWith('tab-1')
@@ -39,6 +40,7 @@ describe('ensureWorktreeHasInitialTerminal', () => {
     ensureWorktreeHasInitialTerminal(store, 'wt-1', { command: 'claude "Fix this bug"' })
 
     expect(store.createTab).toHaveBeenCalledWith('wt-1', undefined, undefined, {
+      creationSource: 'automation',
       pendingActivationSpawn: true
     })
     expect(store.queueTabStartupCommand).toHaveBeenCalledWith('tab-1', {
@@ -70,6 +72,7 @@ describe('ensureWorktreeHasInitialTerminal', () => {
     expect(store.markDefaultTerminalTabsApplied).toHaveBeenCalledWith('wt-1')
     expect(createTab).toHaveBeenCalledTimes(2)
     expect(createTab).toHaveBeenNthCalledWith(1, 'wt-1', undefined, undefined, {
+      creationSource: 'automation',
       pendingActivationSpawn: true,
       recordInteraction: false
     })
@@ -109,11 +112,13 @@ describe('ensureWorktreeHasInitialTerminal', () => {
 
     expect(result).toBe('tab-1')
     expect(createTab).toHaveBeenNthCalledWith(1, 'wt-1', undefined, undefined, {
+      creationSource: 'automation',
       pendingActivationSpawn: true,
       recordInteraction: false,
       activate: false
     })
     expect(createTab).toHaveBeenNthCalledWith(2, 'wt-1', undefined, undefined, {
+      creationSource: 'automation',
       recordInteraction: false,
       activate: false
     })

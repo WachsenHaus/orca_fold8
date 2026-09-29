@@ -19,6 +19,7 @@ export type WorktreeActivationStore = Partial<WorktreeRuntimeOwnerState> & {
     targetGroupId?: string,
     shellOverride?: string,
     options?: {
+      creationSource?: Tab['creationSource']
       pendingActivationSpawn?: boolean
       launchAgent?: TuiAgent
       recordInteraction?: boolean

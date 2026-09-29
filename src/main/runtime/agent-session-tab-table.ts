@@ -3,6 +3,7 @@ import { agentSessionRefusalError } from '../../shared/agent-session-wire-refusa
 import { isAgentSessionSurfaceTabId } from '../../shared/agent-session-surface-tab-id'
 import { structuredAgentSessionTabId } from '../../shared/structured-agent-session-projection'
 import type { AgentSessionStoreState } from './agent-session-record-store-file'
+import type { TabCreationSource } from '../../shared/tab-creation-source'
 
 /**
  * Which conversation each structured chat tab shows, keyed by the host tab id.
@@ -14,6 +15,12 @@ import type { AgentSessionStoreState } from './agent-session-record-store-file'
 export class AgentSessionTabTable {
   private readonly sessionByTab = new Map<string, string>()
   private readonly tabBySession = new Map<string, string>()
+  private readonly creationSources = new Map<string, TabCreationSource>()
+
+  creationSourceFor(sessionId: string): TabCreationSource | undefined {
+    const tabId = this.tabBySession.get(sessionId)
+    return tabId === undefined ? undefined : this.creationSources.get(tabId)
+  }
 
   constructor(entries: Iterable<readonly [tabId: string, sessionId: string]> = []) {
     for (const [tabId, sessionId] of entries) {
@@ -42,13 +49,21 @@ export class AgentSessionTabTable {
    * Gives a session a tab unless it already has one. Without a reserved id it gets the id clients
    * derive for it, unless a cleared conversation's tab kept that id.
    */
-  show(sessionId: string, tabId?: string): void {
-    if (this.tabBySession.has(sessionId)) {
+  show(sessionId: string, tabId?: string, creationSource?: TabCreationSource): void {
+    const existingTabId = this.tabBySession.get(sessionId)
+    if (existingTabId !== undefined) {
+      if (creationSource && !this.creationSources.has(existingTabId)) {
+        this.creationSources.set(existingTabId, creationSource)
+      }
       return
     }
     const derived = structuredAgentSessionTabId(sessionId)
     const held = (candidate: string): boolean => this.sessionByTab.has(candidate)
     this.put(tabId ?? (held(derived) ? reopenedTabId(sessionId, held) : derived), sessionId)
+    const createdTabId = this.tabBySession.get(sessionId)
+    if (createdTabId && creationSource) {
+      this.creationSources.set(createdTabId, creationSource)
+    }
   }
 
   /** Returns the id the session's tab had, if it had one. */
@@ -57,6 +72,7 @@ export class AgentSessionTabTable {
     if (tabId !== undefined) {
       this.tabBySession.delete(sessionId)
       this.sessionByTab.delete(tabId)
+      this.creationSources.delete(tabId)
     }
     return tabId
   }
@@ -75,7 +91,11 @@ export class AgentSessionTabTable {
   }
 
   clone(): AgentSessionTabTable {
-    return new AgentSessionTabTable(this.sessionByTab)
+    const copy = new AgentSessionTabTable()
+    for (const [tabId, sessionId] of this.sessionByTab) {
+      copy.show(sessionId, tabId, this.creationSources.get(tabId))
+    }
+    return copy
   }
 
   equals(other: AgentSessionTabTable): boolean {
@@ -85,7 +105,11 @@ export class AgentSessionTabTable {
       left.length === right.length &&
       left.every(([tabId, sessionId], index) => {
         const [otherTabId, otherSessionId] = right[index]
-        return tabId === otherTabId && sessionId === otherSessionId
+        return (
+          tabId === otherTabId &&
+          sessionId === otherSessionId &&
+          this.creationSourceFor(sessionId) === other.creationSourceFor(otherSessionId)
+        )
       })
     )
   }
@@ -118,27 +142,38 @@ export function setAgentSessionTabVisibility(
   state: AgentSessionStoreState,
   sessionId: string,
   visible: boolean,
-  tabId?: string
+  tabId?: string,
+  creationSource?: TabCreationSource
 ): void {
   if (visible && !state.records.has(sessionId)) {
     throw agentSessionRefusalError('agent_session_identity_required', { reason: 'recordMissing' })
   }
   state.sessionTabs ??= new AgentSessionTabTable()
   if (visible) {
-    state.sessionTabs.show(sessionId, tabId)
+    state.sessionTabs.show(sessionId, tabId, creationSource)
   } else {
     state.sessionTabs.hide(sessionId)
   }
 }
 
-export type PersistedAgentSessionTab = { tabId: string; sessionId: string }
+export type PersistedAgentSessionTab = {
+  tabId: string
+  sessionId: string
+  creationSource?: TabCreationSource
+}
 
 export function serializeAgentSessionTabTable(table: AgentSessionTabTable): {
   sessionTabs: PersistedAgentSessionTab[]
   visibleSessionIds: string[]
 } {
   return {
-    sessionTabs: table.entries().map(([tabId, sessionId]) => ({ tabId, sessionId })),
+    sessionTabs: table.entries().map(([tabId, sessionId]) => ({
+      tabId,
+      sessionId,
+      ...(table.creationSourceFor(sessionId)
+        ? { creationSource: table.creationSourceFor(sessionId) }
+        : {})
+    })),
     // Written for older builds, which restore tabs from this list; never read beside the table.
     visibleSessionIds: table.sessionIds()
   }
@@ -244,13 +279,17 @@ function parsePersistedTabs(
   for (const entry of raw) {
     const tabId: unknown = entry?.tabId
     const sessionId: unknown = entry?.sessionId
+    const creationSource: unknown = entry?.creationSource
     const wellFormed =
       isAgentSessionSurfaceTabId(tabId) &&
       isAgentSessionId(sessionId) &&
+      (creationSource === undefined ||
+        creationSource === 'manual' ||
+        creationSource === 'automation') &&
       table.sessionIdFor(tabId) === undefined &&
       table.tabIdFor(sessionId) === undefined
     if (wellFormed) {
-      table.show(sessionId, tabId)
+      table.show(sessionId, tabId, creationSource)
     } else if (strict) {
       return { valid: false, table: null }
     }

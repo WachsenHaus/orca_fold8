@@ -1,3 +1,4 @@
+import type { TabCreationSource } from '../../../../shared/tab-creation-source'
 /**
  * Creating a structured session for a worktree: resolve the create intent, attach it under the
  * host-computed fingerprint, then publish its tab.
@@ -126,6 +127,7 @@ export async function commitStructuredAgentSessionCreate(args: {
   caller: StructuredAgentSessionCaller
   prepared: PreparedStructuredAgentSessionCreate
   activate: boolean
+  creationSource?: TabCreationSource
 }): Promise<AgentSessionMutationResult<AgentSessionAttachResult>> {
   const { prepared } = args
   const result = await prepared.host.attach(args.caller, prepared.attachParams)
@@ -139,6 +141,7 @@ export async function commitStructuredAgentSessionCreate(args: {
       sessionId: result.value.sessionId,
       agent: prepared.tab.agent,
       activate: args.activate,
+      creationSource: args.creationSource,
       ...(surfaceTabId ? { tabId: surfaceTabId } : {})
     })
   } catch (error) {
@@ -165,6 +168,7 @@ export async function createStructuredAgentSessionForWorktree(args: {
   worktree: string
   agent: 'claude' | 'codex'
   activate: boolean
+  creationSource?: TabCreationSource
   options?: Readonly<Record<string, string>>
   tabId?: string
 }): Promise<AgentSessionMutationResult<AgentSessionAttachResult>> {
@@ -179,6 +183,7 @@ export async function createStructuredAgentSessionForWorktree(args: {
     runtime: args.runtime,
     caller: args.caller,
     prepared,
-    activate: args.activate
+    activate: args.activate,
+    creationSource: args.creationSource
   })
 }

@@ -4,7 +4,6 @@ import type {
   WorktreeProvisionTerminalOptions,
   WorktreeTerminalProvisioningHost
 } from './runtime-worktree-terminal-provisioning'
-import type { TerminalCreateOptions } from './runtime-terminal-contracts'
 import type { WorktreeStartupReadinessHost } from './runtime-worktree-startup-readiness'
 import { prefetchWorktreeCreateBase } from '../worktree-create-base-prefetch'
 import { prepareWorktreeCreateForRepo } from '../worktree-create-preparation'
@@ -15,7 +14,7 @@ export class OrcaRuntimeWithGetWorktreeTerminalProvisioningHost extends OrcaRunt
     return {
       canSpawn: () => Boolean(this.ptyController?.spawn),
       createTerminal: (selector, options) =>
-        this.createTerminal(selector, options as TerminalCreateOptions),
+        this.createTerminal(selector, { ...options, creationSource: 'automation' }),
       splitTerminal: (handle, options) =>
         this.splitTerminal(handle, options as WorktreeProvisionTerminalOptions),
       setTabColor: async (worktreeId, tabId, color) => {

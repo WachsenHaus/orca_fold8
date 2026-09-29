@@ -20,6 +20,7 @@ describe('ensureWorktreeHasInitialTerminal', () => {
     )
 
     expect(store.createTab).toHaveBeenCalledWith('wt-1', undefined, undefined, {
+      creationSource: 'automation',
       pendingActivationSpawn: true
     })
     expect(store.setActiveTab).toHaveBeenCalledWith('tab-1')
@@ -50,6 +51,7 @@ describe('ensureWorktreeHasInitialTerminal', () => {
     )
 
     expect(store.createTab).toHaveBeenCalledWith('wt-1', undefined, undefined, {
+      creationSource: 'automation',
       pendingActivationSpawn: true,
       launchAgent: 'claude',
       viewMode: 'chat'
@@ -85,6 +87,7 @@ describe('ensureWorktreeHasInitialTerminal', () => {
     )
 
     expect(store.createTab).toHaveBeenCalledWith('wt-1', undefined, undefined, {
+      creationSource: 'automation',
       pendingActivationSpawn: true,
       launchAgent: 'claude',
       ...expectedViewMode
@@ -121,6 +124,7 @@ describe('ensureWorktreeHasInitialTerminal', () => {
       )
 
       expect(store.createTab).toHaveBeenCalledWith('wt-1', undefined, undefined, {
+        creationSource: 'automation',
         pendingActivationSpawn: true,
         launchAgent: 'claude',
         ...expectedViewMode
@@ -149,6 +153,7 @@ describe('ensureWorktreeHasInitialTerminal', () => {
     )
 
     expect(createTab).toHaveBeenNthCalledWith(1, 'wt-1', undefined, undefined, {
+      creationSource: 'automation',
       pendingActivationSpawn: true,
       recordInteraction: false,
       launchAgent: 'claude',
@@ -183,6 +188,7 @@ describe('ensureWorktreeHasInitialTerminal', () => {
       )
 
       expect(createTab).toHaveBeenNthCalledWith(1, 'wt-1', undefined, undefined, {
+        creationSource: 'automation',
         pendingActivationSpawn: true,
         recordInteraction: false,
         launchAgent: 'claude',
@@ -210,6 +216,7 @@ describe('ensureWorktreeHasInitialTerminal', () => {
     )
 
     expect(store.createTab).toHaveBeenCalledWith('wt-1', undefined, undefined, {
+      creationSource: 'automation',
       pendingActivationSpawn: true,
       launchAgent: 'claude'
     })
@@ -238,6 +245,7 @@ describe('ensureWorktreeHasInitialTerminal', () => {
     )
 
     expect(store.createTab).toHaveBeenCalledWith('wt-1', undefined, undefined, {
+      creationSource: 'automation',
       pendingActivationSpawn: true,
       launchAgent: 'codex'
     })

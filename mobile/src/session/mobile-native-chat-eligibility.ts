@@ -29,6 +29,7 @@ export type MobileNativeChatResolution = {
 export type MobileNativeChatTab = {
   type: string
   launchAgent?: string | null
+  foregroundAgent?: string | null
   agentStatus?: AgentStatusEntry | null
   /** Host-provided launch context still parked as an unsent TUI-input draft. */
   launchDraft?: string
@@ -58,7 +59,7 @@ export function resolveMobileNativeChat(
   if (tab.type !== 'terminal') {
     return null
   }
-  const liveAgent = tab.agentStatus?.agentType ?? null
+  const liveAgent = tab.agentStatus?.agentType ?? tab.foregroundAgent ?? null
   const agent = liveAgent
     ? isNativeChatSupportedAgent(liveAgent)
       ? liveAgent

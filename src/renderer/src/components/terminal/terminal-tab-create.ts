@@ -33,12 +33,10 @@ export function createNewTerminalTab(
     })
     return
   }
-  const newTab = state.createTab(
-    activeWorktreeId,
-    undefined,
-    shellOverride,
-    options?.startupCwd ? { startupCwd: options.startupCwd } : undefined
-  )
+  const newTab = state.createTab(activeWorktreeId, undefined, shellOverride, {
+    ...options,
+    creationSource: 'manual'
+  })
   state.setActiveTabType('terminal', activeWorktreeId)
   // Why: persist the tab bar order with the new terminal at the end of the
   // current visual order. Without this, reconcileTabOrder falls back to

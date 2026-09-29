@@ -111,7 +111,9 @@ describe('createWebRuntimeSessionTerminal', () => {
     expect(runtimeCall).toHaveBeenNthCalledWith(1, {
       selector: ENVIRONMENT_ID,
       method: 'session.tabs.createTerminal',
+      expectedEnvironmentPairingRevision: undefined,
       params: {
+        creationSource: 'manual',
         worktree: `id:${WORKTREE_ID}`,
         afterTabId: 'host-tab-1::leaf-1',
         targetGroupId: 'group-left',
@@ -293,7 +295,9 @@ describe('createWebRuntimeSessionTerminal', () => {
     expect(runtimeCall).toHaveBeenNthCalledWith(2, {
       selector: ENVIRONMENT_ID,
       method: 'session.tabs.createTerminal',
+      expectedEnvironmentPairingRevision: undefined,
       params: {
+        creationSource: 'manual',
         worktree: `id:${WORKTREE_ID}`,
         afterTabId: undefined,
         targetGroupId: 'group-left',
@@ -361,7 +365,9 @@ describe('createWebRuntimeSessionTerminal', () => {
     expect(runtimeCall).toHaveBeenNthCalledWith(2, {
       selector: ENVIRONMENT_ID,
       method: 'session.tabs.createTerminal',
+      expectedEnvironmentPairingRevision: undefined,
       params: {
+        creationSource: 'manual',
         worktree: `id:${WORKTREE_ID}`,
         afterTabId: undefined,
         targetGroupId: undefined,

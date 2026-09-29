@@ -1,3 +1,4 @@
+import type { TabCreationSource } from './tab-creation-source'
 import type {
   AgentProviderSessionMetadata,
   SleepingAgentLaunchConfig
@@ -239,6 +240,7 @@ export type RuntimeTerminalAgentStatus = {
 export type RuntimeTerminalPresentation = 'background' | 'focused'
 
 type RuntimeTerminalCreateBaseRequestPayload = {
+  creationSource?: TabCreationSource
   requestId: string
   worktreeId?: string
   afterTabId?: string

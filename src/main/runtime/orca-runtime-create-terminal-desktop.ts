@@ -59,6 +59,7 @@ export async function createDesktopTerminal(
     win.webContents.send('terminal:requestTabCreate', {
       requestId,
       worktreeId,
+      ...(launchOpts.creationSource ? { creationSource: launchOpts.creationSource } : {}),
       command: launchOpts.command,
       cwd,
       ...(launchOpts.env ? { env: launchOpts.env } : {}),

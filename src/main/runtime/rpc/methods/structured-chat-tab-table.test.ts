@@ -306,6 +306,28 @@ describe('a chat tab across /clear', () => {
 })
 
 describe('session tab mutations from other clients, unchanged by the table', () => {
+  it('publishes late creator provenance without selecting the background chat', async () => {
+    await createChat(HOST_TEST_SESSION)
+    await createChat('session-second')
+    const before = await snapshot()
+    await runtime.publishStructuredAgentSessionTab({
+      workspaceId: HOST_TEST_LOCATION.workspaceId,
+      sessionId: HOST_TEST_SESSION,
+      agent: 'codex',
+      activate: false,
+      creationSource: 'automation'
+    })
+    const after = await snapshot()
+    expect(after.activeTabId).toBe(before.activeTabId)
+    expect(after.tabs.find((tab) => tab.id === `agent-session:${HOST_TEST_SESSION}`)).toMatchObject(
+      {
+        creationSource: 'automation',
+        isActive: false
+      }
+    )
+    expect(store.getSessionTabCreationSource(HOST_TEST_SESSION)).toBe('automation')
+  })
+
   it('reorders a group holding a chat for a paired client', async () => {
     await createChat(HOST_TEST_SESSION)
     await createChat('session-bravo')

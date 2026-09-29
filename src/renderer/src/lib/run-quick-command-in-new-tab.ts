@@ -104,6 +104,7 @@ export function runQuickCommandInNewTab({
   }
   const store = useAppStore.getState()
   const tab = store.createTab(worktreeId, targetGroupId, undefined, {
+    creationSource: 'manual',
     quickCommandLabel: command.label
   })
 

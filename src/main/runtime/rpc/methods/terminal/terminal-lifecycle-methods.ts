@@ -52,6 +52,7 @@ export const TERMINAL_LIFECYCLE_METHODS = [
           params.reconcileExisting === true,
           (canonicalWorktreeSelector, preAllocatedHandle) =>
             runtime.createTerminal(canonicalWorktreeSelector, {
+              creationSource: clientKind === 'mobile' ? 'manual' : 'automation',
               command: params.command,
               ...(params.shell ? { shellOverride: params.shell } : {}),
               startupCommandDelivery: params.startupCommandDelivery,

@@ -73,6 +73,7 @@ describe('runQuickCommandInNewTab', () => {
 
     expect(result).toEqual({ tabId: 'tab-new' })
     expect(mockState.createTab).toHaveBeenCalledWith('wt-1', 'group-1', undefined, {
+      creationSource: 'manual',
       quickCommandLabel: 'Build'
     })
     expect(mockState.queueTabStartupCommand).toHaveBeenCalledWith('tab-new', {

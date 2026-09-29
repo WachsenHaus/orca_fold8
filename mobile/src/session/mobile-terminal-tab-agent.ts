@@ -19,6 +19,7 @@ type MobileTerminalTabAgentIdentity = {
   title: string
   agentStatus?: { agentType?: AgentStatusEntry['agentType'] | null } | null
   launchAgent?: TuiAgent | null
+  foregroundAgent?: TuiAgent | null
 }
 
 /** Agent identity Orca owns, excluding the display-only title fallback. */
@@ -28,6 +29,9 @@ export function resolveMobileTerminalTabOwnedAgentId(
   const hookAgentType = tab.agentStatus?.agentType?.trim()
   if (hookAgentType && hookAgentType !== 'unknown') {
     return hookAgentType
+  }
+  if (tab.foregroundAgent) {
+    return tab.foregroundAgent
   }
   if (tab.launchAgent) {
     return tab.launchAgent

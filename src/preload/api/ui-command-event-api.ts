@@ -1,3 +1,4 @@
+import type { TabCreationSource } from '../../shared/tab-creation-source'
 import type { MarkdownDocument } from '../../shared/filesystem-entry-types'
 import type { PersistedUIState } from '../../shared/persisted-ui-state-types'
 import type { TuiAgent } from '../../shared/tui-agent'
@@ -157,6 +158,7 @@ export type UiCommandEventApi = {
       launchConfig?: SleepingAgentLaunchConfig
       resumeProviderSession?: AgentProviderSessionMetadata
       launchToken?: string
+      creationSource?: TabCreationSource
       launchAgent?: TuiAgent
       viewMode?: 'terminal' | 'chat'
       title?: string

@@ -33,6 +33,7 @@ export function queueSetupAndIssueCommands(
     }
     if (mode === 'new-tab') {
       const setupTab = store.createTab(worktreeId, undefined, undefined, {
+        creationSource: 'automation',
         recordInteraction: false,
         ...(opts?.activateCreatedTabs === false ? { activate: false } : {})
       })

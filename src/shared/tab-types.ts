@@ -1,6 +1,7 @@
 import type { AiVaultSessionTitle } from './ai-vault-session-title'
 import type { AgentType } from './agent-status-types'
 import type { ExecutionHostId } from './execution-host'
+import type { TabCreationSource } from './tab-creation-source'
 
 // ─── Tab Group Layout ───────────────────────────────────────────────
 export type TabGroupSplitDirection = 'horizontal' | 'vertical'
@@ -50,6 +51,7 @@ export function toVisibleTabType(contentType: TabContentType): WorkspaceVisibleT
 }
 
 export type Tab = {
+  creationSource?: TabCreationSource
   id: string // UUID for terminals, filePath for editors (preserves current convention)
   entityId: string // ID of the backing content (terminal tab ID, file path, browser workspace ID)
   groupId: string

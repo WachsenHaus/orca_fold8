@@ -1,4 +1,5 @@
 import type { ParsedAgentStatusPayload } from '../../shared/agent-status-types'
+import type { TabCreationSource } from '../../shared/tab-creation-source'
 import type {
   AgentLaunchPreferences,
   AgentSessionExecutionClaim,
@@ -22,6 +23,7 @@ import type { RuntimeAgentRowSnapshot } from './runtime-worktree-agent-rows'
 import type { WorkerTerminalHostScope } from './orchestration/worker-terminal-process-liveness'
 
 export type TerminalCreateOptions = {
+  creationSource?: TabCreationSource
   command?: string
   /**
    * Windows shell to spawn AS the PTY process, instead of the host default shell.

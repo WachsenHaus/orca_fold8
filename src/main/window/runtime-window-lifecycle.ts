@@ -118,6 +118,7 @@ export function registerRuntimeWindowLifecycle(
           requestId,
           worktreeId,
           ptyId: opts.ptyId,
+          ...(opts.creationSource ? { creationSource: opts.creationSource } : {}),
           title: opts.title ?? undefined,
           ...(opts.cwd ? { cwd: opts.cwd } : {}),
           ...(opts.launchConfig ? { launchConfig: opts.launchConfig } : {}),

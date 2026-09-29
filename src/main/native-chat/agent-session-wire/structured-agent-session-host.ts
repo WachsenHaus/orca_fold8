@@ -1,3 +1,4 @@
+import type { TabCreationSource } from '../../../shared/tab-creation-source'
 import type { AgentSessionRewindParams } from '../../../shared/agent-session-rewind'
 import { rewindStructuredAgentSession } from './structured-agent-session-rewind'
 import { StructuredConversationCommandController } from './structured-conversation-command-controller'
@@ -202,16 +203,27 @@ export class StructuredAgentSessionHost {
   supportsCreate = (location: AgentSessionExecutionLocation, agent: string): boolean =>
     providerSupport.adapterSupportsCreate(this.deps.adapter, location, agent)
 
-  listSessionTabs = () => sessionTabs.listStructuredAgentSessionTabs(this.sessions)
+  listSessionTabs = () =>
+    sessionTabs.listStructuredAgentSessionTabs(this.sessions).map((tab) => ({
+      ...tab,
+      creationSource: this.deps.store.getSessionTabCreationSource(tab.sessionId)
+    }))
   getPersistedVisibleSessionTabIndex = () => this.deps.store.getVisibleSessionTabIndex()
   getSessionTabId = (sessionId: string): string | null => this.deps.store.getSessionTabId(sessionId)
 
   setSessionTabVisibility = async (
     sessionId: string,
     visible: boolean,
-    tabId?: string
+    tabId?: string,
+    creationSource?: TabCreationSource
   ): Promise<void> => {
-    await sessionTabs.setStructuredAgentSessionTabVisibility(this, sessionId, visible, tabId)
+    await sessionTabs.setStructuredAgentSessionTabVisibility(
+      this,
+      sessionId,
+      visible,
+      tabId,
+      creationSource
+    )
     // The tab edge of the row's lifetime; the handle close is the other.
     if (!visible && !this.sessions.get(sessionId)?.child) {
       this.clientDelivery.forgetStatus(sessionId)

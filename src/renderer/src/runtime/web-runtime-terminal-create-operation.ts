@@ -169,6 +169,7 @@ export async function createWebRuntimeSessionTerminalResult(
           const response = await callEnvironment({
             method: 'session.tabs.createTerminal',
             params: {
+              creationSource: 'manual',
               worktree: toRuntimeWorktreeSelector(args.worktreeId),
               afterTabId: args.afterTabId ? toHostSessionTabId(args.afterTabId) : undefined,
               targetGroupId: args.targetGroupId,
@@ -222,6 +223,7 @@ export async function createWebRuntimeSessionTerminalResult(
       const response = await callEnvironment({
         method: 'session.tabs.createTerminal',
         params: {
+          creationSource: 'manual',
           worktree: toRuntimeWorktreeSelector(args.worktreeId),
           afterTabId: args.afterTabId ? toHostSessionTabId(args.afterTabId) : undefined,
           targetGroupId: args.targetGroupId,

@@ -134,6 +134,7 @@ export const SetTabProps = WorktreeTabSelector.extend({
 })
 
 export const CreateTerminalTab = WorktreeTabSelector.extend({
+  creationSource: z.enum(['manual', 'automation']).optional(),
   afterTabId: z.string().optional(),
   targetGroupId: z.string().optional(),
   command: z.string().optional(),

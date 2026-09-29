@@ -79,8 +79,8 @@ export function useMobileSessionTerminalCreateActions(scope: MobileSessionAttach
     }
 
     try {
-      // Bare structured-provider launches follow host createSupport; prompted launches keep their startup semantics.
-      if (isAgentSessionHandleProvider(agent) && options === undefined) {
+      // Codex keeps a live terminal so either view operates on the same session.
+      if (agent !== 'codex' && isAgentSessionHandleProvider(agent) && options === undefined) {
         const structured = await createMobileStructuredAgentSession(client, worktreeId, agent)
         if (structured.kind === 'created') {
           const previous = activeHandleRef.current

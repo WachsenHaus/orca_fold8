@@ -1,4 +1,5 @@
 import type { DispatchPreambleSendOptions } from './preamble'
+import type { TabCreationSource } from '../../../shared/tab-creation-source'
 
 /** The terminal/worktree capabilities the coordinator needs from the runtime it drives. */
 export type WorktreeDrift = {
@@ -22,7 +23,7 @@ export type CoordinatorRuntime = {
   }>
   createTerminal(
     worktreeSelector?: string,
-    opts?: { command?: string; title?: string }
+    opts?: { command?: string; title?: string; creationSource?: TabCreationSource }
   ): Promise<{ handle: string; worktreeId: string }>
   waitForTerminal(
     handle: string,

@@ -157,7 +157,8 @@ describe('parseWorkspaceSession', () => {
             color: null,
             sortOrder: 0,
             createdAt: 1,
-            launchAgent: 'codex'
+            launchAgent: 'codex',
+            creationSource: 'automation'
           }
         ]
       },
@@ -166,6 +167,7 @@ describe('parseWorkspaceSession', () => {
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(result.value.tabsByWorktree.wt[0].launchAgent).toBe('codex')
+      expect(result.value.tabsByWorktree.wt[0].creationSource).toBe('automation')
     }
   })
 

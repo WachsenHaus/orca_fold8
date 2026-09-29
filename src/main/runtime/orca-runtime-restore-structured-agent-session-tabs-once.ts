@@ -1,4 +1,5 @@
 // @ts-nocheck -- mechanically split from OrcaRuntimeService; behavior is covered by AST equivalence and characterization tests.
+import type { TabCreationSource } from '../../shared/tab-creation-source'
 import { defaultAgentChatLabel } from '../../shared/agent-session-chat-label'
 import { OrcaRuntimeWithGetStructuredAgentSessionCreateSupport } from './orca-runtime-get-structured-agent-session-create-support'
 import { getStructuredAgentSessionHost } from '../native-chat/agent-session-wire/structured-agent-session-registry'
@@ -94,20 +95,32 @@ export class OrcaRuntimeWithRestoreStructuredAgentSessionTabsOnce extends OrcaRu
     agent: 'claude' | 'codex'
     activate: boolean
     notify?: boolean
+    creationSource?: TabCreationSource
     replacesSessionId?: string
     /** The host tab id a create reserved; a session that already has a tab keeps its own. */
     tabId?: string
   }): Promise<void> {
     const host = getStructuredAgentSessionHost()
     if (typeof host?.setSessionTabVisibility === 'function') {
-      await host.setSessionTabVisibility(
-        input.sessionId,
-        true,
-        ...(input.tabId ? [input.tabId] : [])
-      )
+      await host.setSessionTabVisibility(input.sessionId, true, input.tabId, input.creationSource)
     }
-    const existing = this.mobileSessionTabsByWorktree.get(input.workspaceId)
+    let existing = this.mobileSessionTabsByWorktree.get(input.workspaceId)
     const id = `agent-session:${input.sessionId}`
+    if (
+      input.creationSource &&
+      existing?.tabs.some((tab) => tab.id === id && tab.creationSource === undefined)
+    ) {
+      existing = this.storeMobileSessionSnapshot(input.workspaceId, {
+        ...existing,
+        snapshotVersion: existing.snapshotVersion + 1,
+        tabs: existing.tabs.map((tab) =>
+          tab.id === id ? { ...tab, creationSource: input.creationSource } : tab
+        )
+      })
+      if (!input.activate && input.notify !== false) {
+        this.emitMobileSessionTabsSnapshot(existing)
+      }
+    }
     if (existing?.tabs.some((tab) => tab.id === id)) {
       // A background re-publish is a no-op — no store write, no emit — so it cannot re-surface a
       // client whose mirror lost the tab; healing one needs `activate` or an explicit republish.
@@ -139,6 +152,7 @@ export class OrcaRuntimeWithRestoreStructuredAgentSessionTabsOnce extends OrcaRu
     }
     const tab: RuntimeMobileSessionAgentTab = {
       type: 'agent-session',
+      ...(input.creationSource ? { creationSource: input.creationSource } : {}),
       id,
       title: defaultAgentChatLabel(input.agent),
       sessionId: input.sessionId,

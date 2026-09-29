@@ -27,7 +27,10 @@ const PROVIDER_SESSION = {
   transcriptPath: '/transcripts/ac1f6b90.jsonl'
 }
 
-async function createRuntime(rows: AgentStatusIpcPayload[] = []): Promise<OrcaRuntimeService> {
+async function createRuntime(
+  rows: AgentStatusIpcPayload[] = [],
+  plainShell = false
+): Promise<OrcaRuntimeService> {
   const runtime = new OrcaRuntimeService(null, undefined, {
     getAgentStatusSnapshot: () => rows
   })
@@ -45,12 +48,13 @@ async function createRuntime(rows: AgentStatusIpcPayload[] = []): Promise<OrcaRu
     spawn: vi.fn().mockResolvedValue({ id: PTY_ID }),
     write: () => true,
     kill: () => true,
-    getForegroundProcess: async () => null
+    getForegroundProcess: async () => (plainShell ? 'codex' : null)
   })
   await runtime.createTerminal(`id:${WORKTREE_ID}`, {
     tabId: TAB_ID,
     leafId: LEAF_ID,
-    launchAgent: 'claude',
+    ...(plainShell ? {} : { launchAgent: 'claude' as const }),
+    creationSource: 'automation',
     title: 'Terminal'
   })
   return runtime
@@ -170,6 +174,20 @@ async function projectAgentStatus(
 }
 
 describe('mobile session tabs: live-title evidence vs published agent status', () => {
+  it('publishes a shell-started Codex identity and creator without fabricating agent status', async () => {
+    const runtime = await createRuntime([], true)
+    publishRendererReleasedPane(runtime, 'Terminal')
+    await runtime.refreshPtyForegroundAgentFromController(PTY_ID)
+    const result = await runtime.listMobileSessionTabs(`id:${WORKTREE_ID}`)
+    expect(result.tabs[0]).toMatchObject({
+      type: 'terminal',
+      foregroundAgent: 'codex',
+      creationSource: 'automation'
+    })
+    expect(result.tabs[0]).not.toHaveProperty('launchAgent')
+    expect(result.tabs[0]).not.toHaveProperty('agentStatus')
+  })
+
   it('does not resurrect launch identity after the renderer clears it', async () => {
     const runtime = await createRuntime()
     publishRendererReleasedPane(runtime, '[Image #1] Inspect this')

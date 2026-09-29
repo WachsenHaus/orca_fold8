@@ -59,6 +59,8 @@ export const SESSION_TAB_METHODS = [
       }
       return runtime.createMobileSessionTerminal(params.worktree, {
         afterTabId: params.afterTabId,
+        creationSource:
+          params.creationSource ?? (clientKind === 'mobile' ? 'manual' : 'automation'),
         targetGroupId: params.targetGroupId,
         command: params.command,
         cwd: params.cwd,

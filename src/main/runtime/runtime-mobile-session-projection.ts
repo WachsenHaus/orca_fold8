@@ -283,6 +283,7 @@ export function projectRuntimeMobileSessionTabs(
     const clientAgentStatus: { agentStatus?: AgentStatusEntry } = projectedStatusEntry
       ? { agentStatus: clientStatusFields as AgentStatusEntry }
       : {}
+    const creationSource = tab.creationSource ?? liveLeafPty?.creationSource ?? pty?.creationSource
     tabs.push({
       type: 'terminal',
       id: tab.id,
@@ -292,6 +293,8 @@ export function projectRuntimeMobileSessionTabs(
       ...(tab.ptyId ? { ptyId: tab.ptyId } : {}),
       ...(tab.terminalTheme ? { terminalTheme: tab.terminalTheme } : {}),
       ...(launchAgent ? { launchAgent } : {}),
+      foregroundAgent: liveLeafPty?.foregroundAgent ?? pty?.foregroundAgent ?? null,
+      ...(creationSource ? { creationSource } : {}),
       ...clientAgentStatus,
       ...(turnCompletedAt !== undefined ? { turnCompletedAt } : {}),
       ...(tab.parentLayout ? { parentLayout: tab.parentLayout } : {}),

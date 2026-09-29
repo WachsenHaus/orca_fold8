@@ -49,6 +49,7 @@ export function applyDefaultTerminalTabs(
           ? (agentKindToTuiAgent(startup.telemetry.agent_kind) ?? undefined)
           : undefined
     const tab = store.createTab(worktreeId, undefined, undefined, {
+      creationSource: 'automation',
       pendingActivationSpawn: true,
       recordInteraction: false,
       ...(launchAgent

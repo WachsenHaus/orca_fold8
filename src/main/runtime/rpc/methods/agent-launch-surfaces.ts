@@ -61,6 +61,7 @@ export function agentLaunchSurfaceFactory(
       const sessionId = requested ?? createStructuredAgentSessionId(agent, randomUUID)
       const seeded = narrowStructuredLaunchSeedOptions(options)
       const created = await createStructuredAgentSessionForWorktree({
+        creationSource: context.clientKind === 'mobile' ? 'manual' : 'automation',
         runtime: context.runtime,
         ensureHost: async () => {
           await context.runtime.ensureStructuredAgentSessionHost()
@@ -129,6 +130,7 @@ export function agentLaunchSurfaceFactory(
         // The agent id is not a shell command — `cursor` is the desktop app, its CLI is
         // `cursor-agent` — so the runtime builds the configured launcher.
         startupAgent: agent,
+        creationSource: context.clientKind === 'mobile' ? 'manual' : 'automation',
         // Folded into that launcher by the same startup plan a new agent tab is built from, so an
         // argv agent's prompt is in its argv at exec time rather than typed in afterwards.
         ...(startupPrompt ? { startupPrompt } : {}),

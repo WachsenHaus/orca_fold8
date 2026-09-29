@@ -191,6 +191,8 @@ describe('launchAgentInNewTab', () => {
     })
 
     expect(mockCreateTab).toHaveBeenCalledWith('wt-1', undefined, undefined, {
+      creationSource: 'manual',
+      quickCommandLabel: undefined,
       launchAgent: 'codex'
     })
   })
@@ -216,7 +218,7 @@ describe('launchAgentInNewTab', () => {
       FLOATING_TERMINAL_WORKTREE_ID,
       undefined,
       undefined,
-      { launchAgent: 'codex' }
+      { creationSource: 'manual', quickCommandLabel: undefined, launchAgent: 'codex' }
     )
   })
 
@@ -240,6 +242,8 @@ describe('launchAgentInNewTab', () => {
     })
 
     expect(mockCreateTab).toHaveBeenCalledWith('wt-1', undefined, undefined, {
+      creationSource: 'manual',
+      quickCommandLabel: undefined,
       launchAgent: 'codex',
       viewMode: 'chat'
     })
@@ -278,6 +282,7 @@ describe('launchAgentInNewTab', () => {
     })
 
     expect(mockCreateTab).toHaveBeenCalledWith('wt-1', undefined, undefined, {
+      creationSource: 'manual',
       launchAgent: 'grok',
       quickCommandLabel: undefined,
       viewMode: 'chat'
@@ -306,6 +311,7 @@ describe('launchAgentInNewTab', () => {
     launchAgentInNewTab({ agent: 'grok', worktreeId: 'wt-1' })
 
     expect(mockCreateTab).toHaveBeenCalledWith('wt-1', undefined, undefined, {
+      creationSource: 'manual',
       launchAgent: 'grok',
       quickCommandLabel: undefined
     })
@@ -378,6 +384,7 @@ describe('launchAgentInNewTab', () => {
     })
 
     expect(mockCreateTab).toHaveBeenCalledWith('wt-1', undefined, undefined, {
+      creationSource: 'manual',
       launchAgent: 'codex',
       quickCommandLabel: 'Review'
     })
@@ -450,7 +457,7 @@ describe('launchAgentInNewTab', () => {
       'wt-1',
       undefined,
       undefined,
-      expect.objectContaining({ viewMode: 'chat' })
+      expect.objectContaining({ creationSource: 'manual', viewMode: 'chat' })
     )
     expect(mockSetTabViewMode).not.toHaveBeenCalled()
   })

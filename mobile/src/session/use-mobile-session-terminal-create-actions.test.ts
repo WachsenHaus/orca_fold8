@@ -69,18 +69,38 @@ function createScope(client: RpcClient) {
   }
 }
 
-describe('mobile + Codex tab creation routing', () => {
+describe('mobile agent tab creation routing', () => {
   let renderer: ReactTestRenderer | undefined
   afterEach(() => renderer?.unmount())
 
-  it('uses the structured agent-session path for a bare Codex launch', async () => {
+  it('creates one Codex terminal for both terminal and chat views', async () => {
+    const client = clientReturning(terminalCreateResponse())
+    const scope = createScope(client)
+    let actions: ReturnType<typeof useMobileSessionTerminalCreateActions> | undefined
+    function Harness() {
+      actions = useMobileSessionTerminalCreateActions(scope as never)
+      return null
+    }
+    await act(async () => {
+      renderer = create(createElement(Harness))
+    })
+    await act(async () => actions?.handleCreateTerminal('codex'))
+    expect(client.sendRequest).toHaveBeenCalledExactlyOnceWith(
+      'session.tabs.createTerminal',
+      expect.objectContaining({ agent: 'codex', worktree: 'id:workspace-1' })
+    )
+    expect(scope.setActiveHandle).toHaveBeenCalledWith('terminal-1')
+    expect(scope.setActiveSessionTabId).toHaveBeenCalledWith('terminal-tab-1')
+  })
+
+  it('uses the structured agent-session path for a bare Claude launch', async () => {
     const client = clientReturning(
       { ok: true, result: { supported: true } },
       {
         ok: true,
         result: {
           ok: true,
-          value: { sessionId: 'codex_session_1' }
+          value: { sessionId: 'claude_session_1' }
         }
       }
     )
@@ -94,24 +114,24 @@ describe('mobile + Codex tab creation routing', () => {
       renderer = create(createElement(Harness))
     })
     await act(async () => {
-      await actions?.handleCreateTerminal('codex')
+      await actions?.handleCreateTerminal('claude')
     })
 
     expect(client.sendRequest).toHaveBeenNthCalledWith(1, 'agentSession.createSupport', {
       worktree: 'id:workspace-1',
-      agent: 'codex'
+      agent: 'claude'
     })
     expect(client.sendRequest).toHaveBeenNthCalledWith(
       2,
       'agentSession.create',
-      expect.objectContaining({ worktree: 'id:workspace-1', agent: 'codex' }),
+      expect.objectContaining({ worktree: 'id:workspace-1', agent: 'claude' }),
       expect.anything()
     )
     expect(client.sendRequest).not.toHaveBeenCalledWith(
       'session.tabs.createTerminal',
       expect.anything()
     )
-    expect(scope.setActiveSessionTabId).toHaveBeenCalledWith('agent-session:codex_session_1')
+    expect(scope.setActiveSessionTabId).toHaveBeenCalledWith('agent-session:claude_session_1')
     expect(scope.setActiveHandle).toHaveBeenCalledWith(null)
     expect(scope.unsubscribeTerminal).toHaveBeenCalledWith('existing-terminal')
   })
@@ -131,13 +151,13 @@ describe('mobile + Codex tab creation routing', () => {
       renderer = create(createElement(Harness))
     })
     await act(async () => {
-      await actions?.handleCreateTerminal('codex')
+      await actions?.handleCreateTerminal('claude')
     })
 
     expect(client.sendRequest).toHaveBeenNthCalledWith(
       2,
       'session.tabs.createTerminal',
-      expect.objectContaining({ worktree: 'id:workspace-1', agent: 'codex' })
+      expect.objectContaining({ worktree: 'id:workspace-1', agent: 'claude' })
     )
     expect(scope.setActiveSessionTabId).toHaveBeenCalledWith('terminal-tab-1')
   })
@@ -167,18 +187,18 @@ describe('mobile + Codex tab creation routing', () => {
       renderer = create(createElement(Harness))
     })
     await act(async () => {
-      await actions?.handleCreateTerminal('codex')
+      await actions?.handleCreateTerminal('claude')
     })
 
     expect(client.sendRequest).toHaveBeenNthCalledWith(
       3,
       'session.tabs.createTerminal',
-      expect.objectContaining({ worktree: 'id:workspace-1', agent: 'codex' })
+      expect.objectContaining({ worktree: 'id:workspace-1', agent: 'claude' })
     )
     expect(scope.setActiveSessionTabId).toHaveBeenCalledWith('terminal-tab-1')
   })
 
-  it('keeps prompted Codex launches on the legacy terminal path', async () => {
+  it('keeps prompted Claude launches on the legacy terminal path', async () => {
     const client = clientReturning(terminalCreateResponse(), {
       ok: true,
       result: { send: { accepted: true } }
@@ -193,12 +213,12 @@ describe('mobile + Codex tab creation routing', () => {
       renderer = create(createElement(Harness))
     })
     await act(async () => {
-      await actions?.handleCreateTerminal('codex', { initialPrompt: 'Inspect this diff' })
+      await actions?.handleCreateTerminal('claude', { initialPrompt: 'Inspect this diff' })
     })
 
     expect(client.sendRequest).toHaveBeenCalledWith(
       'session.tabs.createTerminal',
-      expect.objectContaining({ agent: 'codex' })
+      expect.objectContaining({ agent: 'claude' })
     )
     expect(client.sendRequest).not.toHaveBeenCalledWith(
       'agentSession.createSupport',
@@ -225,7 +245,7 @@ describe('mobile + Codex tab creation routing', () => {
       renderer = create(createElement(Harness))
     })
     await act(async () => {
-      await actions?.handleCreateTerminal('codex')
+      await actions?.handleCreateTerminal('claude')
     })
 
     expect(sendRequest.mock.calls.map(([method]) => method)).toEqual([
@@ -254,7 +274,7 @@ describe('mobile + Codex tab creation routing', () => {
         renderer = create(createElement(Harness))
       })
       await act(async () => {
-        await actions?.handleCreateTerminal('codex')
+        await actions?.handleCreateTerminal('claude')
       })
 
       const sendRequest = client.sendRequest as unknown as ReturnType<typeof vi.fn>

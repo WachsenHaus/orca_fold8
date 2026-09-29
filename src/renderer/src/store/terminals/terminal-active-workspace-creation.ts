@@ -41,7 +41,7 @@ export function createActiveWorkspaceTerminalActions(
       if (isWebClientLocation() && worktreeId !== FLOATING_TERMINAL_WORKTREE_ID) {
         return
       }
-      const terminal = get().createTab(worktreeId, groupId)
+      const terminal = get().createTab(worktreeId, groupId, undefined, { creationSource: 'manual' })
       get().setActiveTab(terminal.id)
       get().setActiveTabType('terminal', worktreeId)
       const latest = get()

@@ -4,8 +4,10 @@ import type { RuntimeBrowserPlacement } from './runtime-browser-placement'
 import type { TerminalColorOverrides } from './terminal-color-overrides'
 import type { TerminalLayoutSnapshot } from './terminal-tab-types'
 import type { TuiAgent } from './tui-agent'
+import type { TabCreationSource } from './tab-creation-source'
 
 export type RuntimeMobileSessionTerminalTab = {
+  creationSource?: TabCreationSource
   type: 'terminal'
   id: string
   title: string
@@ -20,6 +22,8 @@ export type RuntimeMobileSessionTerminalTab = {
   /** Event-only lead-turn end time for paired clients; never persisted in AgentStatusEntry. */
   turnCompletedAt?: number
   launchAgent?: TuiAgent
+  /** Live process identity observed by the execution host, independent of launch provenance. */
+  foregroundAgent?: TuiAgent | null
   startupCwd?: string
   parentLayout?: TerminalLayoutSnapshot
   color?: string | null
@@ -39,6 +43,7 @@ export type RuntimeMobileTerminalTheme = {
 }
 
 export type RuntimeMobileSessionMarkdownTab = {
+  creationSource?: TabCreationSource
   type: 'markdown'
   id: string
   title: string
@@ -57,6 +62,7 @@ export type RuntimeMobileSessionMarkdownTab = {
 }
 
 export type RuntimeMobileSessionFileTab = {
+  creationSource?: TabCreationSource
   type: 'file'
   id: string
   title: string
@@ -72,6 +78,7 @@ export type RuntimeMobileSessionFileTab = {
 }
 
 export type RuntimeMobileSessionBrowserTab = {
+  creationSource?: TabCreationSource
   type: 'browser'
   id: string
   title: string
@@ -92,6 +99,7 @@ export type RuntimeMobileSessionBrowserTab = {
 }
 
 export type RuntimeMobileSessionAgentTab = {
+  creationSource?: TabCreationSource
   type: 'agent-session'
   id: string
   title: string

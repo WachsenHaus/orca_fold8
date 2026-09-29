@@ -73,7 +73,10 @@ export function useMobileSessionTabGrouping({
         : new Set<string>()
     const next = new Set<string>()
     for (const tab of sessionTabs) {
-      if (previous.has(tab.id) || isOrcaAgentSessionTab(tab)) {
+      if (
+        isOrcaAgentSessionTab(tab) ||
+        (tab.creationSource === undefined && previous.has(tab.id))
+      ) {
         next.add(tab.id)
       }
     }

@@ -65,6 +65,19 @@ async function open(): Promise<AgentSessionRecordStore> {
 }
 
 describe('chat tab table', () => {
+  it('retains creator provenance across republishing and reopening the store', async () => {
+    const store = await open()
+    await store.reserveOwner(reserveRequest())
+    await store.setSessionTabVisibility('session-alpha', true, 'tab-alpha', 'automation')
+    await store.setSessionTabVisibility('session-alpha', true)
+    expect(store.getSessionTabCreationSource('session-alpha')).toBe('automation')
+    const reopened = await open()
+    expect(reopened.getSessionTabCreationSource('session-alpha')).toBe('automation')
+    await reopened.setSessionTabVisibility('session-alpha', false)
+    await reopened.setSessionTabVisibility('session-alpha', true, 'tab-alpha', 'manual')
+    expect((await open()).getSessionTabCreationSource('session-alpha')).toBe('manual')
+  })
+
   const LEGACY_TAB_ID = 'structured-agent-session-session-alpha'
   const filePath = () => agentSessionStorePath(directory)
   const readFileJson = async () => JSON.parse(await readFile(filePath(), 'utf-8'))

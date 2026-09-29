@@ -94,6 +94,7 @@ export async function createStructuredWorkerSession(args: {
   let created: Awaited<ReturnType<typeof createStructuredAgentSessionForWorktree>> | undefined
   try {
     created = await createStructuredAgentSessionForWorktree({
+      creationSource: 'automation',
       runtime: args.runtime,
       ensureHost: async () => {
         await args.runtime.ensureStructuredAgentSessionHost()

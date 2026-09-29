@@ -118,6 +118,7 @@ describe('launchWorktreeBackgroundTerminals', () => {
 
     expect(mockCreateTab).toHaveBeenCalledTimes(2)
     expect(mockCreateTab).toHaveBeenCalledWith('wt-1', undefined, undefined, {
+      creationSource: 'automation',
       activate: false,
       recordInteraction: false
     })

@@ -114,6 +114,7 @@ export function buildMobileTerminalSurfaceTabs(
       ...(inputs.terminalTheme ? { terminalTheme: inputs.terminalTheme } : {}),
       ...(agentStatus ? { agentStatus } : {}),
       ...(launchAgent ? { launchAgent } : {}),
+      ...(terminal.creationSource ? { creationSource: terminal.creationSource } : {}),
       ...(publishedLaunchDraft
         ? {
             launchDraft: publishedLaunchDraft.text,

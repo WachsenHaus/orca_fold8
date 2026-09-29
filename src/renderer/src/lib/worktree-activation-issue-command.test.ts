@@ -21,6 +21,7 @@ describe('ensureWorktreeHasInitialTerminal', () => {
     })
 
     expect(store.createTab).toHaveBeenCalledWith('wt-1', undefined, undefined, {
+      creationSource: 'automation',
       pendingActivationSpawn: true
     })
     expect(store.setActiveTab).toHaveBeenCalledWith('tab-1')

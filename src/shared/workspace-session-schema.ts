@@ -81,6 +81,7 @@ const terminalLayoutSnapshotSchema = z.object({
 // ─── Terminal tab (legacy) ──────────────────────────────────────────
 
 const terminalTabSchema = z.object({
+  creationSource: z.enum(['manual', 'automation']).optional(),
   id: terminalTabIdSchema,
   ptyId: z.string().nullable(),
   worktreeId: z.string(),
@@ -127,6 +128,7 @@ const executionHostIdSchema = z.custom<ExecutionHostId>(
 )
 
 const tabSchema = z.object({
+  creationSource: z.enum(['manual', 'automation']).optional(),
   id: z.string(),
   entityId: z.string(),
   groupId: z.string(),

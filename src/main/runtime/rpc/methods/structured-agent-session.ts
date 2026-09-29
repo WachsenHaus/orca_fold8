@@ -186,6 +186,7 @@ export const STRUCTURED_AGENT_SESSION_METHODS = [
         runtime: ctx.runtime,
         caller: callerFor(ctx),
         prepared,
+        creationSource: ctx.clientKind === 'runtime' ? 'automation' : 'manual',
         activate: true
       })
     }

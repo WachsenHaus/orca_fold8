@@ -1,3 +1,4 @@
+import type { TabCreationSource } from '../../../src/shared/tab-creation-source'
 import type { AgentSessionHandleProvider } from '../../../src/shared/agent-session-provider-handle'
 import type { DiffComment } from '../../../src/shared/diff-comment-types'
 import type { TuiAgent } from '../../../src/shared/tui-agent'
@@ -12,7 +13,7 @@ export type Terminal = TerminalRecord
 
 export type MobileSessionTabType = 'terminal' | 'markdown' | 'file' | 'browser' | 'agent-session'
 
-export type MobileSessionTab =
+type MobileSessionTabContent =
   | {
       type: 'terminal'
       id: string
@@ -25,6 +26,7 @@ export type MobileSessionTab =
       /** Agent Orca launched in this terminal, if any. This makes chat eligible
        *  before the first live agent-status update reaches the mobile client. */
       launchAgent?: TuiAgent
+      foregroundAgent?: TuiAgent | null
       /** Host-provided launch context still parked as an unsent TUI-input draft. */
       launchDraft?: string
       launchDraftCreatedAt?: number
@@ -67,6 +69,10 @@ export type MobileSessionTab =
       isActive: boolean
     }
   | MobileBrowserTab
+
+export type MobileSessionTab = MobileSessionTabContent & {
+  creationSource?: TabCreationSource
+}
 
 export type SessionTabsResult = {
   worktree: string

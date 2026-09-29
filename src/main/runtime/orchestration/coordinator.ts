@@ -252,6 +252,7 @@ export class Coordinator {
       // Why: create at most one terminal per tick to avoid spawning many at once.
       try {
         const created = await this.runtime.createTerminal(this.opts.worktree, {
+          creationSource: 'automation',
           title: `Worker: ${readyTasks[0].spec.slice(0, 40)}`
         })
         terminals.push(created.handle)

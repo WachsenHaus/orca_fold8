@@ -1,3 +1,4 @@
+import type { TabCreationSource } from '../../shared/tab-creation-source'
 import type { SleepingAgentLaunchConfig } from '../../shared/agent-session-resume'
 import type { TerminalPaneSplitSource } from '../../shared/feature-education-telemetry'
 import type { TerminalRevealIdentity } from '../../shared/terminal-reveal-identity'
@@ -54,6 +55,7 @@ export type RuntimeNotifier = {
       cwd?: string
       launchConfig?: SleepingAgentLaunchConfig
       launchToken?: string
+      creationSource?: TabCreationSource
       launchAgent?: TuiAgent
       viewMode?: 'terminal' | 'chat'
       activate?: boolean

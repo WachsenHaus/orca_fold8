@@ -32,6 +32,7 @@ export function registerTerminalPresentationIpcBridge(unsubs: (() => void)[]): v
         resumeProviderSession,
         launchToken,
         launchAgent,
+        creationSource,
         viewMode,
         title,
         ptyId,
@@ -85,10 +86,12 @@ export function registerTerminalPresentationIpcBridge(unsubs: (() => void)[]): v
             (ptyId
               ? store.createTab(worktreeId, undefined, undefined, {
                   initialPtyId: ptyId,
+                  ...(creationSource ? { creationSource } : {}),
                   activate: shouldActivate,
                   ...(launchAgent
                     ? {
                         launchAgent,
+                        creationSource,
                         // Why: a paired client resolved explicit mode before PTY materialization; only omitted mode uses host defaults.
                         ...(viewMode
                           ? { viewMode }

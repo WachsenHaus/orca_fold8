@@ -41,7 +41,9 @@ describe('useIpcEvents updater integration', () => {
       environmentId: null,
       activate: true
     })
-    expect(createTab).toHaveBeenCalledWith('wt-1')
+    expect(createTab).toHaveBeenCalledWith('wt-1', undefined, undefined, {
+      creationSource: 'manual'
+    })
     expect(setActiveTabType).toHaveBeenCalledWith('terminal', 'wt-1')
 
     // Exact regression sequence: Local default -> connect/navigate Windows 2 ->

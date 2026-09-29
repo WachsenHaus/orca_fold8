@@ -99,7 +99,8 @@ export class OrcaRuntimeWithCreateManagedWorktree extends OrcaRuntimeWithGetWork
         deps: {
           store: this.store,
           ptySpawnAvailable: Boolean(this.ptyController?.spawn),
-          createTerminal: (selector, options) => this.createTerminal(selector, options),
+          createTerminal: (selector, options) =>
+            this.createTerminal(selector, { ...options, creationSource: 'automation' }),
           markTrusted: (agent, path) =>
             this.markWorkspaceTrustedForAgent(agent, sshConnectionId, path),
           pasteDraft: (handle, draft) => this.pasteStartupDraftWhenReady(handle, draft),
@@ -239,7 +240,8 @@ export class OrcaRuntimeWithCreateManagedWorktree extends OrcaRuntimeWithGetWork
       ports: {
         canSpawn: Boolean(this.ptyController?.spawn),
         markTrusted: (agent, path) => this.markLocalWorkspaceTrustedForAgent(agent, path),
-        createTerminal: (selector, options) => this.createTerminal(selector, options),
+        createTerminal: (selector, options) =>
+          this.createTerminal(selector, { ...options, creationSource: 'automation' }),
         pasteDraft: (handle, draft) => this.pasteStartupDraftWhenReady(handle, draft),
         sendFollowup: (handle, followup) => this.sendStartupFollowupWhenReady(handle, followup),
         provision: (options) => this.provisionManagedWorktreeTerminals(options),

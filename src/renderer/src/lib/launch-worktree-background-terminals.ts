@@ -168,6 +168,7 @@ async function createBackgroundTab(args: {
 }): Promise<BackgroundTab> {
   const store = useAppStore.getState()
   const tab = store.createTab(args.worktree.id, undefined, undefined, {
+    creationSource: 'automation',
     activate: false,
     recordInteraction: false
   })
