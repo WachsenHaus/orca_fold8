@@ -66,6 +66,7 @@ export function useMobileNativeChatTailFollow<TItem>(args: {
   const userScrollSettleFrameRef = useRef<number | null>(null)
   const contentHeightRef = useRef(0)
   const settlePinFrameRef = useRef<number | null>(null)
+  const settlePinNeedsAnotherPassRef = useRef(false)
 
   // Single writer, so the event-time ref and the render flag cannot disagree.
   const setFollowing = useCallback((next: boolean) => {
@@ -85,6 +86,7 @@ export function useMobileNativeChatTailFollow<TItem>(args: {
   }, [])
 
   const clearSettlePin = useCallback(() => {
+    settlePinNeedsAnotherPassRef.current = false
     if (settlePinFrameRef.current !== null) {
       cancelAnimationFrame(settlePinFrameRef.current)
       settlePinFrameRef.current = null
@@ -92,7 +94,11 @@ export function useMobileNativeChatTailFollow<TItem>(args: {
   }, [])
 
   const scheduleSettlePin = useCallback(() => {
-    if (!SCROLL_COMMAND_PRECEDES_MOUNT || settlePinFrameRef.current !== null) {
+    if (!SCROLL_COMMAND_PRECEDES_MOUNT) {
+      return
+    }
+    if (settlePinFrameRef.current !== null) {
+      settlePinNeedsAnotherPassRef.current = true
       return
     }
     const waitFrames = (remaining: number) => {
@@ -111,6 +117,11 @@ export function useMobileNativeChatTailFollow<TItem>(args: {
           listRef.current?.scrollToOffset({ animated: false, offset: height })
         } else {
           listRef.current?.scrollToEnd({ animated: false })
+        }
+        // Preserve streaming corrections and give newer pins a full mount delay.
+        if (settlePinNeedsAnotherPassRef.current) {
+          settlePinNeedsAnotherPassRef.current = false
+          waitFrames(SETTLE_PIN_FRAMES)
         }
       })
     }
