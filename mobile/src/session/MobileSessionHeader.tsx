@@ -1,25 +1,24 @@
+import { useState } from 'react'
 import { View, Text, ScrollView, Pressable } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import {
+  ChevronDown,
   ChevronLeft,
   Folder,
-  File,
-  FileText,
   GitBranch,
-  Globe,
   MessageSquare,
   MoreHorizontal,
+  Pin,
   Plus,
   SquareTerminal
 } from 'lucide-react-native'
 import { MobileSessionHeaderIconButton } from './MobileSessionHeaderIconButton'
 import { triggerMediumImpact } from '../platform/haptics'
 import { StatusDot } from '../components/StatusDot'
-import { MobileAgentIcon } from '../components/MobileAgentIcon'
-import {
-  getMobileSessionTabTitle,
-  resolveMobileTerminalTabAgentId
-} from './mobile-terminal-tab-agent'
+import { getMobileSessionTabTitle } from './mobile-terminal-tab-agent'
+import { MobileSessionTabIcon } from './MobileSessionTabIcon'
+import { OrcaAgentsTabSheet } from './OrcaAgentsTabSheet'
+import { ORCA_AGENTS_GROUP_LABEL } from './mobile-session-tab-grouping'
 import { colors } from '../theme/mobile-theme'
 import { QuickCommandsTabButton } from './QuickCommandsTabButton'
 import { styles } from './mobile-session-styles'
@@ -57,6 +56,7 @@ export function MobileSessionHeader({ controller }: { controller: MobileSessionC
     switchSessionTab,
     openSessionTabActionSheetAfterKeyboardDismiss,
     visibleTabs,
+    tabGrouping,
     showConnectionRetry,
     terminalSummary,
     handlePanelTap,
@@ -72,6 +72,9 @@ export function MobileSessionHeader({ controller }: { controller: MobileSessionC
     isTabChatView: nativeChatController.isTabChatView,
     nativeChatTranscriptIsLocalReadable
   })
+  const [showOrcaAgents, setShowOrcaAgents] = useState(false)
+  const { stripTabs, orcaAgentTabs, isTabPinned, toggleTabPin } = tabGrouping
+  const orcaAgentGroupActive = orcaAgentTabs.some((t) => t.id === activeSessionTabId)
   return (
     <SafeAreaView style={styles.sessionChrome} edges={['top']}>
       <View style={styles.sessionTopBar}>
@@ -164,7 +167,7 @@ export function MobileSessionHeader({ controller }: { controller: MobileSessionC
               scrollActiveTabIntoView(activeSessionTabIdRef.current, false)
             }}
           >
-            {visibleTabs.map((t) => (
+            {stripTabs.map((t) => (
               <Pressable
                 key={t.id}
                 style={[styles.tab, t.id === activeSessionTabId && styles.tabActive]}
@@ -183,21 +186,8 @@ export function MobileSessionHeader({ controller }: { controller: MobileSessionC
                 delayLongPress={400}
               >
                 <View style={styles.tabLabelRow}>
-                  {t.type === 'browser' && (
-                    <Globe size={13} color={colors.textSecondary} strokeWidth={2.1} />
-                  )}
-                  {t.type === 'markdown' && (
-                    <FileText size={13} color={colors.textSecondary} strokeWidth={2.1} />
-                  )}
-                  {t.type === 'file' && (
-                    <File size={13} color={colors.textSecondary} strokeWidth={2.1} />
-                  )}
-                  {t.type === 'agent-session' && <MobileAgentIcon agentId={t.agent} size={13} />}
-                  {t.type === 'terminal' &&
-                    (() => {
-                      const agentId = resolveMobileTerminalTabAgentId(t)
-                      return agentId ? <MobileAgentIcon agentId={agentId} size={13} /> : null
-                    })()}
+                  {isTabPinned(t) && <Pin size={11} color={colors.textMuted} strokeWidth={2.1} />}
+                  <MobileSessionTabIcon tab={t} />
                   <Text
                     style={[styles.tabText, t.id === activeSessionTabId && styles.tabTextActive]}
                     numberOfLines={1}
@@ -207,6 +197,34 @@ export function MobileSessionHeader({ controller }: { controller: MobileSessionC
                 </View>
               </Pressable>
             ))}
+            {orcaAgentTabs.length > 0 && (
+              <Pressable
+                style={[styles.tab, orcaAgentGroupActive && styles.tabActive]}
+                onLayout={(e) => {
+                  const { x, width } = e.nativeEvent.layout
+                  // Why: grouped tabs have no chip of their own; scroll-into-view targets the group.
+                  for (const t of orcaAgentTabs) {
+                    tabLayoutsRef.current.set(t.id, { x, width })
+                  }
+                  if (orcaAgentTabs.some((t) => t.id === activeSessionTabIdRef.current)) {
+                    scrollActiveTabIntoView(activeSessionTabIdRef.current, false)
+                  }
+                }}
+                onPress={() => setShowOrcaAgents(true)}
+                accessibilityRole="button"
+                accessibilityLabel={`${ORCA_AGENTS_GROUP_LABEL}, ${orcaAgentTabs.length} tabs`}
+              >
+                <View style={styles.tabLabelRow}>
+                  <Text
+                    style={[styles.tabText, orcaAgentGroupActive && styles.tabTextActive]}
+                    numberOfLines={1}
+                  >
+                    {`${ORCA_AGENTS_GROUP_LABEL} ${orcaAgentTabs.length}`}
+                  </Text>
+                  <ChevronDown size={13} color={colors.textSecondary} strokeWidth={2.1} />
+                </View>
+              </Pressable>
+            )}
           </ScrollView>
           {/* Why: pinned outside the scroll strip so the new-agent button stays reachable however far the tabs scroll. */}
           <Pressable
@@ -243,6 +261,15 @@ export function MobileSessionHeader({ controller }: { controller: MobileSessionC
           />
         </View>
       )}
+      <OrcaAgentsTabSheet
+        visible={showOrcaAgents && orcaAgentTabs.length > 0}
+        tabs={orcaAgentTabs}
+        activeTabId={activeSessionTabId}
+        onClose={() => setShowOrcaAgents(false)}
+        onSelect={switchSessionTab}
+        onPin={toggleTabPin}
+        onOpenActions={openSessionTabActionSheetAfterKeyboardDismiss}
+      />
     </SafeAreaView>
   )
 }

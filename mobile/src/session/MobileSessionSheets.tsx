@@ -83,6 +83,7 @@ export function MobileSessionSheets({ controller }: { controller: MobileSessionC
     handleCloseSessionTab,
     bulkCloseActions,
     closeWithBulkActions,
+    tabGrouping,
     createTabAgentActions,
     sendDiffNotesAgentActions,
     handlePanelTap,
@@ -202,7 +203,8 @@ export function MobileSessionSheets({ controller }: { controller: MobileSessionC
           onClear: (target) => void handleClearTerminal(target),
           onClose: (target) => void handleCloseTerminal(target),
           onCloseSessionTab: (tab) => void handleCloseSessionTab(tab),
-          bulkCloseActions
+          bulkCloseActions,
+          pinActions: (tab) => tabGrouping.pinSheetActions(tab, () => setActionTarget(null))
         })}
         onClose={() => setActionTarget(null)}
       />
@@ -269,6 +271,9 @@ export function MobileSessionSheets({ controller }: { controller: MobileSessionC
         onNavigate={handleBrowserNavigationCommand}
         onCloseTab={handleCloseSessionTab}
         bulkCloseActions={bulkCloseActions}
+        pinActions={tabGrouping.pinSheetActions(browserActionTarget, () =>
+          setBrowserActionTarget(null)
+        )}
       />
       <ActionSheetModal
         visible={agentSessionActionTarget != null}

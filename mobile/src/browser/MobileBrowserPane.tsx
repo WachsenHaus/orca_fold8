@@ -40,6 +40,7 @@ export type MobileBrowserTab = {
   loading: boolean
   canGoBack: boolean
   canGoForward: boolean
+  isPinned?: boolean
   isActive: boolean
 }
 
