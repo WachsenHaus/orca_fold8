@@ -7,9 +7,11 @@ import type { RpcSuccess } from '../transport/types'
 import { activateMobileSessionTab } from './mobile-session-tab-activation'
 import type { MobileSessionTab, SessionTabsResult } from './mobile-session-route-types'
 import type { MobileSessionCloseActionsModel } from './use-mobile-session-close-actions'
+import { useMobileSessionTabGrouping } from './use-mobile-session-tab-grouping'
 
 export function useMobileSessionBulkClose(scope: MobileSessionCloseActionsModel) {
   const {
+    hostId,
     worktreeId,
     client,
     connState,
@@ -35,9 +37,17 @@ export function useMobileSessionBulkClose(scope: MobileSessionCloseActionsModel)
     switchSessionTab,
     closeSessionTab: handleCloseSessionTab
   })
-  const closeWithBulkActions = createCloseWithBulkActions(handleCloseSessionTab, bulkCloseActions)
-
   const visibleTabs: MobileSessionTab[] = sessionTabs
+  const tabGrouping = useMobileSessionTabGrouping({
+    hostId,
+    worktreeId,
+    sessionTabs
+  })
+  const closeWithBulkActions = createCloseWithBulkActions(
+    handleCloseSessionTab,
+    bulkCloseActions,
+    tabGrouping.pinSheetActions
+  )
   const activeMarkdownTab = activeSessionTab?.type === 'markdown' ? activeSessionTab : null
   const activeFileTab = activeSessionTab?.type === 'file' ? activeSessionTab : null
   const activeBrowserTab = activeSessionTab?.type === 'browser' ? activeSessionTab : null
@@ -101,6 +111,7 @@ export function useMobileSessionBulkClose(scope: MobileSessionCloseActionsModel)
     bulkCloseActions,
     closeWithBulkActions,
     visibleTabs,
+    tabGrouping,
     activeMarkdownTab,
     activeFileTab,
     activeBrowserTab,

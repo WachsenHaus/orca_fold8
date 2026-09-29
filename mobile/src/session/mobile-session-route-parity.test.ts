@@ -99,13 +99,14 @@ const HOST_COMPONENT_NAMES = new Set([
 // and the pane's `onCellBoxChange` goes to the viewport refit.
 // Again when one frame ref replaced the height ref, width ref and width state (hooks 280).
 // Again when one `notifyTerminalFrame` took the frame's layout (hooks 281, callbacks 80).
-const HEAD_MAIN_HOOK_SHA256 = '004b011722b17ac82c96f0b3c8e303d39b2431a216424e9b86a1ee6a4896f23e'
+// Moved when bulk close gained `useMobileSessionTabGrouping` (tab pins + Orca Agents group).
+const HEAD_MAIN_HOOK_SHA256 = '12fc2f56b58096e122dee961cd32270630f430d5ab2a9edbb8c5a6f29c248d1a'
 // Moved when the prompt-cancel flag became one structured-session host support object (main).
 // Re-recorded against the merged tree. Again when the frame-layout and cell-box-change callbacks
 // named the refs they read in their dependency lists (react-doctor).
 // Again when the frame's width and height became one `terminalFrameRef`.
 // Again when the frame's layout moved into `notifyTerminalFrame`.
-const HEAD_HOOK_BINDING_SHA256 = 'c1bcb859202aaf8d612d3023cb4d895719da513879c61b01545a249a0bda662b'
+const HEAD_HOOK_BINDING_SHA256 = 'ccc8650284addeffb12498de28e2d1a16fb86649a9b730d960a8e68427ba70ca'
 // Moved when `notifyTerminalFrame` joined and `handleTerminalFrameLayout` became `subscribeIntendedActiveTerminal`.
 const HEAD_CALLBACK_IDENTITY_SHA256 =
   '9c966301b373c11b27359ef1388c593b638c7f6831186d5c5321553504183e07'
@@ -206,17 +207,18 @@ const HEAD_TIMER_CLEANUP_SHA256 = 'c73f1d1c2cc89642f3d727d6f3b6b81860a9d6f342345
 // the ref is undefined. 532 -> 531: the live input's reopen flag reads the host OS, not an 'android' literal.
 // 531 -> 529: the markdown status line moved to `markdownReaderStatusText`.
 const HEAD_RUNTIME_STRING_SHA256 =
-  '4ab2f316f60c234480615136c02273675543f24d653eb76a62b76f6bc986d985'
+  '63b8cfbfbd911d537eaaed1a8c68fc03a8095c0a74b39f50ff1258c8af9ef9d2'
 // Moved by both of the dock's fields: their refs, and the live one's submit handler, are the seam's now;
 // their keyboard type and remount key read the host OS.
 // Moved again when the terminal frame kept its laid-out width unrounded, for every fit.
 // Again when the frame's onLayout wrote one frame ref and notified a new width imperatively.
 // Again when the frame's first laid-out layout alone subscribes a held-back document.
 // Again when the frame's onLayout made one `notifyTerminalFrame` call.
-const HEAD_HOST_JSX_SHA256 = 'f71b1ee495f67a6e389abf597948ffdff1f9a4a10cde6abefd2611ea4dd94245'
-const HEAD_LEAF_JSX_SHA256 = '62eb05c6e2ac0be6d553a141fc8aa1641fcb0c678777d5d539f490aab8648417'
+// Moved when the header gained the Orca Agents chip + sheet and tab icons moved into MobileSessionTabIcon.
+const HEAD_HOST_JSX_SHA256 = '7b66cb879e6221d6b158a4743cd88ff75681cac02df36977b2a1f9d5a64688b8'
+const HEAD_LEAF_JSX_SHA256 = '4ff0b5283c7c3954ba4ed3de8bbd621e7dca57001dd5540914be4500e07ac68d'
 const HEAD_STYLE_REFERENCE_SHA256 =
-  '56a005a1f65b30c11092e3422caef67810e1ec50f66fdd06471c370138b1eeb6'
+  '81119b0f6e8ccdc160a227d7b4133bdf68d2e0f0d6058dac88e05d06dcf8d267'
 const HEAD_IDENTITY_FIELD_SHA256 =
   '91146853930a34dd1f3d80e5c97fbacd7cf19fb93dd26fe8fc6f29169622f9d6'
 const HEAD_NAVIGATION_SHA256 = '9d96f5dad7de555d6553eac39c0fab00efad507470fd562cb9beaa32db16f512'
@@ -611,7 +613,7 @@ describe('mobile session route extraction parity', () => {
     const contentBindings = CONTENT_COMPONENT_NAMES.flatMap(
       (name) => readHookFacts(name, definitions).bindings
     )
-    expect(main.hooks).toHaveLength(281)
+    expect(main.hooks).toHaveLength(282)
     expect(hash(main.hooks)).toBe(HEAD_MAIN_HOOK_SHA256)
     expect(hash(main.bindings)).toBe(HEAD_HOOK_BINDING_SHA256)
     expect(main.callbacks).toHaveLength(80)
@@ -656,14 +658,14 @@ describe('mobile session route extraction parity', () => {
 
   it('preserves runtime strings, styles, and the expanded JSX tree', () => {
     const strings = readRuntimeStrings()
-    expect(strings).toHaveLength(529)
+    expect(strings).toHaveLength(531)
     expect(hash(strings)).toBe(HEAD_RUNTIME_STRING_SHA256)
     const jsx = readJsxFacts(readDefinitions())
-    expect(jsx.host).toHaveLength(125)
+    expect(jsx.host).toHaveLength(128)
     expect(hash(jsx.host)).toBe(HEAD_HOST_JSX_SHA256)
-    expect(jsx.leaf).toHaveLength(61)
+    expect(jsx.leaf).toHaveLength(60)
     expect(hash(jsx.leaf)).toBe(HEAD_LEAF_JSX_SHA256)
-    expect(jsx.styleReferences).toHaveLength(173)
+    expect(jsx.styleReferences).toHaveLength(178)
     expect(hash(jsx.styleReferences)).toBe(HEAD_STYLE_REFERENCE_SHA256)
   })
 })
