@@ -83,7 +83,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "Mobile shell: $EXPO_PUBLIC_MOBILE_SHELL"
-          cd android && ./gradlew assembleRelease
+          cd android && ./gradlew assembleRelease --max-workers=2 '-Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g'
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v7
