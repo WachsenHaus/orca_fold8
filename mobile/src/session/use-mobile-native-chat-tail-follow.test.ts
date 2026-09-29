@@ -29,9 +29,9 @@ describe('useMobileNativeChatTailFollow', () => {
     return tail!
   }
 
-  async function flushFrames(): Promise<void> {
+  async function flushFrames(milliseconds = 100): Promise<void> {
     await act(async () => {
-      vi.advanceTimersByTime(100)
+      vi.advanceTimersByTime(milliseconds)
     })
   }
 
@@ -56,7 +56,7 @@ describe('useMobileNativeChatTailFollow', () => {
     vi.useRealTimers()
   })
 
-  it('re-pins once to the latest height after the grown content mounts', async () => {
+  it('coalesces updates into one pending correction chain', async () => {
     const follow = await mount()
 
     act(() => {
@@ -65,11 +65,50 @@ describe('useMobileNativeChatTailFollow', () => {
     })
     expect(scrollToOffset).toHaveBeenCalledTimes(2)
 
-    await flushFrames()
+    expect(vi.getTimerCount()).toBe(1)
+    await flushFrames(32)
 
     expect(scrollToOffset).toHaveBeenCalledTimes(3)
     expect(scrollToOffset).toHaveBeenLastCalledWith({ animated: false, offset: 960 })
     expect(scrollToEnd).not.toHaveBeenCalled()
+    await flushFrames()
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it('corrects the final resize even when the earlier correction precedes its mount', async () => {
+    const follow = await mount()
+    let mountedHeight = 900
+    let nativeOffset = 0
+    scrollToOffset.mockImplementation(({ offset }: { offset: number }) => {
+      nativeOffset = Math.min(offset, mountedHeight)
+    })
+
+    act(() => follow.pinToTailAfterContentResize(320, 900))
+    await flushFrames(16)
+    act(() => follow.pinToTailAfterContentResize(320, 960))
+    await flushFrames(16)
+    expect(nativeOffset).toBe(900)
+
+    mountedHeight = 960
+    await flushFrames(32)
+    expect(nativeOffset).toBe(960)
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it('keeps correcting during continuous updates and settles after the last one', async () => {
+    const follow = await mount()
+    act(() => follow.pinToTailAfterContentResize(320, 900))
+
+    for (let frame = 1; frame <= 6; frame++) {
+      await flushFrames(16)
+      expect(scrollToOffset).toHaveBeenCalledTimes(frame + Math.floor(frame / 2))
+      act(() => follow.pinToTailAfterContentResize(320, 900 + frame * 60))
+      expect(vi.getTimerCount()).toBe(1)
+    }
+
+    await flushFrames()
+    expect(scrollToOffset).toHaveBeenLastCalledWith({ animated: false, offset: 1_260 })
+    expect(vi.getTimerCount()).toBe(0)
   })
 
   it('settles a viewport pin on the measured content height', async () => {
@@ -89,11 +128,43 @@ describe('useMobileNativeChatTailFollow', () => {
     const follow = await mount()
 
     act(() => follow.pinToTailAfterContentResize(320, 900))
+    expect(vi.getTimerCount()).toBe(1)
     act(() => follow.beginUserScroll())
+    expect(vi.getTimerCount()).toBe(0)
     await flushFrames()
 
     expect(scrollToOffset).toHaveBeenCalledOnce()
   })
+
+  it.each(['drag', 'history', 'unmount'] as const)(
+    'cancels a repeated correction on %s',
+    async (action) => {
+      const follow = await mount()
+      act(() => follow.pinToTailAfterContentResize(320, 900))
+      await flushFrames(16)
+      act(() => follow.pinToTailAfterContentResize(320, 960))
+      await flushFrames(32)
+      expect(vi.getTimerCount()).toBe(1)
+      scrollToOffset.mockClear()
+
+      act(() => {
+        if (action === 'drag') {
+          follow.beginUserScroll()
+        }
+        if (action === 'history') {
+          follow.detachFromTail()
+        }
+        if (action === 'unmount') {
+          renderer?.unmount()
+          renderer = null
+        }
+      })
+
+      expect(vi.getTimerCount()).toBe(0)
+      await flushFrames()
+      expect(scrollToOffset).not.toHaveBeenCalled()
+    }
+  )
 
   it('leaves platforms that mount first to the single immediate pin', async () => {
     mountOrder.SCROLL_COMMAND_PRECEDES_MOUNT = false
