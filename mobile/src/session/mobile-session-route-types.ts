@@ -29,6 +29,8 @@ export type MobileSessionTab =
       launchDraft?: string
       launchDraftCreatedAt?: number
       terminalTheme?: MobileTerminalTheme
+      /** Host-owned pin; a device-local choice can override it. */
+      isPinned?: boolean
       isActive: boolean
     }
   | {
@@ -37,6 +39,7 @@ export type MobileSessionTab =
       title: string
       sessionId: string
       agent: AgentSessionHandleProvider
+      isPinned?: boolean
       isActive: boolean
     }
   | {
@@ -46,6 +49,7 @@ export type MobileSessionTab =
       filePath: string
       relativePath: string
       isDirty: boolean
+      isPinned?: boolean
       isActive: boolean
       documentVersion: string
     }
@@ -59,6 +63,7 @@ export type MobileSessionTab =
       mode?: 'edit' | 'diff'
       diffSource?: 'staged' | 'unstaged' | 'branch' | 'commit'
       isDirty: boolean
+      isPinned?: boolean
       isActive: boolean
     }
   | MobileBrowserTab

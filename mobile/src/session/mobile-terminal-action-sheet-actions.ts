@@ -3,7 +3,10 @@ import type { ActionSheetAction } from '../components/ActionSheetModal'
 import type { MobileNativeChatTab } from './mobile-native-chat-eligibility'
 import { getMobileNativeChatToggleActions } from './mobile-native-chat-toggle-action'
 
-type TerminalTab = MobileNativeChatTab & { id: string; terminal: string | null }
+type TerminalTab = MobileNativeChatTab & {
+  id: string
+  terminal: string | null
+}
 
 /** Builds the terminal long-press menu without adding another action block to the
  *  already dense session route. Native chat stays first as the view switch. */
@@ -28,6 +31,8 @@ export function getMobileTerminalActionSheetActions<
   /** Appended after Close; receives the pressed tab's id so the session route's
    *  bulk-close builder can resolve the anchor itself. */
   bulkCloseActions?: (anchorTabId: string | undefined, dismiss: () => void) => ActionSheetAction[]
+  /** Pin/Unpin for the pressed tab; placed before Rename. */
+  pinActions?: (tab: Tab | undefined) => ActionSheetAction[]
 }): ActionSheetAction[] {
   const { target } = args
   if (!target) {
@@ -52,6 +57,7 @@ export function getMobileTerminalActionSheetActions<
         args.onToggleDisplayMode(target.handle)
       }
     },
+    ...(args.pinActions?.(sessionTab) ?? []),
     {
       label: 'Rename',
       closeBeforePress: true,

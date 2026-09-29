@@ -36,6 +36,19 @@ const terminalTab = (id: string, handle: string | null) => ({
 })
 
 describe('getMobileTerminalActionSheetActions', () => {
+  it('offers the pin action for the pressed terminal before Rename', () => {
+    const tab = terminalTab('tab-1', 'terminal-1')
+    const pin = { label: 'Pin Tab', onPress: vi.fn() }
+    const pinActions = vi.fn(() => [pin])
+    const actions = buildActions({ tabs: [tab], pinActions })
+    expect(pinActions).toHaveBeenCalledWith(tab)
+    expect(actions.indexOf(pin)).toBeLessThan(
+      actions.findIndex((action) => action.label === 'Rename')
+    )
+    actions.find((action) => action.label === 'Pin Tab')?.onPress()
+    expect(pin.onPress).toHaveBeenCalledOnce()
+  })
+
   it('defers Rename until after the action sheet closes', () => {
     const target = { handle: 'terminal-1' }
     const onDismiss = vi.fn()

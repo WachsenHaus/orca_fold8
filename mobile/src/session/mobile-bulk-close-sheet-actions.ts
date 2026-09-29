@@ -70,14 +70,16 @@ export function createBulkCloseSheetActions(deps: BulkCloseSheetDeps) {
 }
 
 /**
- * Builds the destructive Close entry followed by the bulk-close entries, so
- * per-tab-type sheets in the session route stay at one spread per call site.
+ * Builds the optional Pin entry, the destructive Close entry, then the bulk-close
+ * entries, so per-tab-type sheets in the session route stay at one spread per call site.
  */
 export function createCloseWithBulkActions(
   closeSessionTab: (tab: MobileSessionTab) => Promise<void>,
-  bulkActions: ReturnType<typeof createBulkCloseSheetActions>
+  bulkActions: ReturnType<typeof createBulkCloseSheetActions>,
+  pinActions?: (tab: MobileSessionTab | null, dismiss: () => void) => ActionSheetAction[]
 ) {
   return (target: MobileSessionTab | null, dismiss: () => void): ActionSheetAction[] => [
+    ...(pinActions?.(target, dismiss) ?? []),
     {
       label: 'Close',
       destructive: true,

@@ -8,6 +8,7 @@ import {
   GitBranch,
   Globe,
   MoreHorizontal,
+  Pin,
   Plus
 } from 'lucide-react-native'
 import { MobileSessionHeaderIconButton } from './MobileSessionHeaderIconButton'
@@ -54,6 +55,7 @@ export function MobileSessionHeader({ controller }: { controller: MobileSessionC
     switchSessionTab,
     openSessionTabActionSheetAfterKeyboardDismiss,
     visibleTabs,
+    tabPins,
     showConnectionRetry,
     terminalSummary,
     handlePanelTap,
@@ -143,7 +145,7 @@ export function MobileSessionHeader({ controller }: { controller: MobileSessionC
               scrollActiveTabIntoView(activeSessionTabIdRef.current, false)
             }}
           >
-            {visibleTabs.map((t) => (
+            {tabPins.orderedTabs.map((t) => (
               <Pressable
                 key={t.id}
                 style={[styles.tab, t.id === activeSessionTabId && styles.tabActive]}
@@ -160,8 +162,18 @@ export function MobileSessionHeader({ controller }: { controller: MobileSessionC
                   openSessionTabActionSheetAfterKeyboardDismiss(t)
                 }}
                 delayLongPress={400}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: t.id === activeSessionTabId }}
+                accessibilityLabel={
+                  tabPins.isTabPinned(t)
+                    ? `${getMobileSessionTabTitle(t)}, pinned`
+                    : getMobileSessionTabTitle(t)
+                }
               >
                 <View style={styles.tabLabelRow}>
+                  {tabPins.isTabPinned(t) && (
+                    <Pin size={11} color={colors.textMuted} strokeWidth={2.1} />
+                  )}
                   {t.type === 'browser' && (
                     <Globe size={13} color={colors.textSecondary} strokeWidth={2.1} />
                   )}
