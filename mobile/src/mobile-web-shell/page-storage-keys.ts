@@ -44,6 +44,8 @@ export const PAGE_STORAGE_KEY_PREFIXES = [
   'orca:pins:',
   /** `orca:nativeChatTabs:<hostId>:<worktreeId>`: which tabs of one workspace show the chat. */
   'orca:nativeChatTabs:',
+  /** Device-local pin overrides for the displayed workspace. */
+  'orca:sessionTabPins:',
   /** `orca:terminalLiveInputDisabled:<hostId>:<worktreeId>`: the handles typing goes around. */
   'orca:terminalLiveInputDisabled:'
 ] as const
@@ -117,6 +119,7 @@ export function pageStorageKeysForRoute(hostId: string, routePathname: string): 
       ? []
       : [
           workspaceScopedKey('orca:nativeChatTabs:', hostId, workspace.worktreeId),
+          workspaceScopedKey('orca:sessionTabPins:', hostId, workspace.worktreeId),
           workspaceScopedKey('orca:terminalLiveInputDisabled:', hostId, workspace.worktreeId)
         ]
   return [...PAGE_STORAGE_EXACT_KEYS, `orca:pins:${hostId}`, ...scoped].filter(isPageStorageKey)

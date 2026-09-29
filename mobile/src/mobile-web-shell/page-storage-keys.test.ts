@@ -58,11 +58,15 @@ describe('the keys a page may read and write', () => {
     }
   })
 
-  it("adds the session route's two workspace-scoped keys, and only for it", () => {
+  it("adds the session route's workspace-scoped keys, and only for it", () => {
     const session = pageStorageKeysForRoute('host-1', SESSION_ROUTE)
     expect(
       session.filter((key) => !pageStorageKeysForRoute('host-1', HOST_ROUTE).includes(key))
-    ).toEqual(['orca:nativeChatTabs:host-1:wt-1', 'orca:terminalLiveInputDisabled:host-1:wt-1'])
+    ).toEqual([
+      'orca:nativeChatTabs:host-1:wt-1',
+      'orca:sessionTabPins:host-1:wt-1',
+      'orca:terminalLiveInputDisabled:host-1:wt-1'
+    ])
     // A route that carries a worktree segment and declares no key of its own gets none.
     expect(pageStorageKeysForRoute('host-1', '/h/host-1/files/wt-1')).toEqual(
       pageStorageKeysForRoute('host-1', HOST_ROUTE)
@@ -121,6 +125,21 @@ describe('the workspace a route names', () => {
 })
 
 describe('the allowlist narrowed to one session', () => {
+  it('admits tab pins only for this host and workspace', () => {
+    expect(
+      isPageStorageKeyForRoute('orca:sessionTabPins:host-1:wt-1', 'host-1', SESSION_ROUTE)
+    ).toBe(true)
+    for (const key of [
+      'orca:sessionTabPins:host-2:wt-1',
+      'orca:sessionTabPins:host-1:wt-2',
+      'orca:sessionTabPins:'
+    ]) {
+      expect(isPageStorageKeyForRoute(key, 'host-1', SESSION_ROUTE)).toBe(false)
+    }
+    expect(isPageStorageKeyForRoute('orca:sessionTabPins:host-1:wt-1', 'host-1', HOST_ROUTE)).toBe(
+      false
+    )
+  })
   it('admits exactly the keys that session was handed', () => {
     for (const key of pageStorageKeysForRoute('host-1', SESSION_ROUTE)) {
       expect(isPageStorageKeyForRoute(key, 'host-1', SESSION_ROUTE), key).toBe(true)

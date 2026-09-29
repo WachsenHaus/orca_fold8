@@ -27,6 +27,17 @@ const darkTheme = {
 }
 
 describe('mobile terminal records', () => {
+  it.each(['terminal', 'markdown', 'file', 'browser', 'agent-session'] as const)(
+    'applies a host pin-only snapshot change for %s',
+    (type) => {
+      const before = { type, id: 'tab', title: 'Tab', terminal: 'handle', isActive: false }
+      const after = { ...before, isPinned: true }
+      expect(mobileSessionTabsEqual([before], [after])).toBe(false)
+      expect(mobileSessionTabsEqual([after], [{ ...after, isPinned: false }])).toBe(false)
+      expect(mobileSessionTabsEqual([after], [after])).toBe(true)
+    }
+  )
+
   it('compares terminal themes without serializing them', () => {
     const equivalentTheme = {
       mode: 'dark' as const,
