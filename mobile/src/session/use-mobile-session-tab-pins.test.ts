@@ -102,29 +102,63 @@ describe('useMobileSessionTabPins', () => {
     expect(model!.isTabPinned(tabs[1]!)).toBe(true)
   })
 
-  it('merges a tap during the initial read before saving existing pins', async () => {
-    let finishRead: (value: string | null) => void = () => {}
-    vi.mocked(AsyncStorage.getItem).mockImplementationOnce(
-      () =>
-        new Promise((resolve) => {
-          finishRead = resolve
-        })
-    )
+  it.each(['unmount', 'workspace'] as const)(
+    'persists an early tap across %s before the initial read finishes',
+    async (navigation) => {
+      await AsyncStorage.setItem('orca:sessionTabPins:host:folder', '{"a":true}')
+      let finishRead: (value: string | null) => void = () => {}
+      vi.mocked(AsyncStorage.getItem).mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finishRead = resolve
+          })
+      )
+      await act(async () => {
+        renderer = create(createElement(Harness))
+      })
+      await act(async () => {
+        model.toggleTabPin(tabs[1]!)
+        if (navigation === 'unmount') {
+          renderer?.unmount()
+          renderer = null
+        } else {
+          renderer?.update(createElement(Harness, { worktreeId: 'other' }))
+        }
+      })
+      await act(async () => {
+        finishRead('{"a":true}')
+      })
+      await act(async () => {
+        if (renderer) {
+          renderer.update(createElement(Harness))
+        } else {
+          renderer = create(createElement(Harness))
+        }
+      })
+      expect(model!.isTabPinned(tabs[0]!)).toBe(true)
+      expect(model!.isTabPinned(tabs[1]!)).toBe(true)
+      expect(AsyncStorage.setItem).toHaveBeenLastCalledWith(
+        'orca:sessionTabPins:host:folder',
+        '{"a":true,"b":true}'
+      )
+    }
+  )
+
+  it('keeps rapid pin/unpin writes ordered across remounts', async () => {
     await act(async () => {
       renderer = create(createElement(Harness))
     })
     await act(async () => {
       model.toggleTabPin(tabs[1]!)
+      model.toggleTabPin(tabs[1]!)
+      model.toggleTabPin(tabs[0]!)
+      renderer?.unmount()
+      renderer = null
     })
-    expect(AsyncStorage.setItem).not.toHaveBeenCalled()
     await act(async () => {
-      finishRead('{"a":true}')
+      renderer = create(createElement(Harness))
     })
     expect(model!.isTabPinned(tabs[0]!)).toBe(true)
-    expect(model!.isTabPinned(tabs[1]!)).toBe(true)
-    expect(AsyncStorage.setItem).toHaveBeenLastCalledWith(
-      'orca:sessionTabPins:host:folder',
-      '{"a":true,"b":true}'
-    )
+    expect(model!.isTabPinned(tabs[1]!)).toBe(false)
   })
 })

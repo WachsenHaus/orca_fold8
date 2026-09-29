@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   loadSessionTabPins,
-  saveSessionTabPins,
+  updateSessionTabPin,
   type SessionTabPinOverrides
 } from '../storage/session-tab-pins'
 import {
@@ -37,14 +37,12 @@ export function useMobileSessionTabPins({
   const [pins, setPins] = useState<{
     scopeKey: string
     overrides: SessionTabPinOverrides
-    loaded: boolean
-    dirty: boolean
   }>({
     scopeKey,
-    overrides: EMPTY_OVERRIDES,
-    loaded: false,
-    dirty: false
+    overrides: EMPTY_OVERRIDES
   })
+  const pinsRef = useRef(pins)
+  pinsRef.current = pins
   const overrides = pins.scopeKey === scopeKey ? pins.overrides : EMPTY_OVERRIDES
 
   useEffect(() => {
@@ -54,8 +52,8 @@ export function useMobileSessionTabPins({
         // Why: a pin tapped before the read landed must not be clobbered by it.
         setPins((current) =>
           current.scopeKey === scopeKey
-            ? { ...current, overrides: { ...loaded, ...current.overrides }, loaded: true }
-            : { scopeKey, overrides: loaded, loaded: true, dirty: false }
+            ? { scopeKey, overrides: { ...loaded, ...current.overrides } }
+            : { scopeKey, overrides: loaded }
         )
       }
     })
@@ -63,17 +61,6 @@ export function useMobileSessionTabPins({
       cancelled = true
     }
   }, [hostId, worktreeId, scopeKey])
-
-  const pendingSaveRef = useRef(Promise.resolve())
-  useEffect(() => {
-    if (pins.scopeKey !== scopeKey || !pins.loaded || !pins.dirty) {
-      return
-    }
-    // Merge the initial read before saving, and keep rapid writes in tap order.
-    pendingSaveRef.current = pendingSaveRef.current
-      .then(() => saveSessionTabPins(hostId, worktreeId, pins.overrides))
-      .catch(() => {})
-  }, [hostId, worktreeId, scopeKey, pins])
 
   const orderedTabs = useMemo(
     () => orderMobileSessionTabsByPin(sessionTabs, overrides),
@@ -87,19 +74,13 @@ export function useMobileSessionTabPins({
 
   const toggleTabPin = useCallback(
     (tab: MobileSessionTab) => {
-      setPins((current) => {
-        const base = current.scopeKey === scopeKey ? current.overrides : EMPTY_OVERRIDES
-        const next = {
-          ...base,
-          [tab.id]: !isMobileSessionTabPinned(tab, base)
-        }
-        return {
-          scopeKey,
-          overrides: next,
-          loaded: current.scopeKey === scopeKey && current.loaded,
-          dirty: true
-        }
-      })
+      const current = pinsRef.current
+      const base = current.scopeKey === scopeKey ? current.overrides : EMPTY_OVERRIDES
+      const pinned = !isMobileSessionTabPinned(tab, base)
+      const next = { scopeKey, overrides: { ...base, [tab.id]: pinned } }
+      pinsRef.current = next
+      setPins(next)
+      void updateSessionTabPin(hostId, worktreeId, tab.id, pinned).catch(() => {})
     },
     [hostId, worktreeId, scopeKey]
   )

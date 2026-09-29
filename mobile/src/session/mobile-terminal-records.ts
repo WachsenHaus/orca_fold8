@@ -28,7 +28,7 @@ export type MobileTerminalSessionTab = {
   isActive: boolean
 }
 
-type MobileSessionTabLike =
+type MobileSessionTabLike = (
   | MobileTerminalSessionTab
   | {
       type: 'markdown'
@@ -70,7 +70,7 @@ type MobileSessionTabLike =
       agent?: string
       isActive?: boolean
     }
-
+) & { isPinned?: boolean }
 export function mobileTerminalThemesEqual(
   left: MobileTerminalTheme | null | undefined,
   right: MobileTerminalTheme | null | undefined
@@ -115,7 +115,8 @@ function mobileSessionTabEqual(
     a.type !== b.type ||
     a.id !== b.id ||
     a.title !== b.title ||
-    a.isActive !== b.isActive
+    a.isActive !== b.isActive ||
+    a.isPinned !== b.isPinned
   ) {
     return false
   }

@@ -12,6 +12,7 @@
  * failure quotes the line it found.
  */
 import { globSync, readFileSync } from 'node:fs'
+import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
@@ -26,6 +27,7 @@ const MIRRORED_WRITERS = [
     keys: ['TEXT_SCALE_KEY', 'SIDEBAR_WIDTH_KEY', 'DOCK_WIDTH_KEY']
   },
   { file: 'src/storage/session-view-preferences.ts', keys: ['DEFAULT_SESSION_VIEW_KEY'] },
+  { file: 'src/storage/session-tab-pins.ts', keys: ['SESSION_TAB_PINS_PREFIX'] },
   {
     file: 'src/terminal/terminal-accessory-layout.ts',
     keys: ['TERMINAL_ACCESSORY_LAYOUT_STORAGE_KEY']
@@ -50,7 +52,9 @@ const NOTE_FIRST_CALLER = 'src/mobile-web-shell/use-page-host-snapshot.ts'
 
 /** Every module under `mobile/src`, so a new caller cannot arrive in a file no row names. */
 function mobileSources() {
-  return globSync('src/**/*.{ts,tsx}', { cwd: mobileDir }).sort()
+  return globSync('src/**/*.{ts,tsx}', { cwd: mobileDir })
+    .map((file) => file.split(path.sep).join('/'))
+    .sort()
 }
 
 /** The line a match sits on, so a failure names what it found rather than only that it found one. */
@@ -62,7 +66,7 @@ function linesMatching(source, pattern) {
 }
 
 function read(file) {
-  return readFileSync(new URL(file, new URL(mobileDir, 'file:///')), 'utf8')
+  return readFileSync(path.join(mobileDir, file), 'utf8')
 }
 
 describe('the mirrored storage write path', () => {
