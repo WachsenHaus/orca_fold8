@@ -41,20 +41,21 @@ export function useMobileSessionTabPins({
     scopeKey,
     overrides: EMPTY_OVERRIDES
   })
+  // Hydration and taps share pending state even before React commits a render.
   const pinsRef = useRef(pins)
-  pinsRef.current = pins
   const overrides = pins.scopeKey === scopeKey ? pins.overrides : EMPTY_OVERRIDES
 
   useEffect(() => {
     let cancelled = false
     void loadSessionTabPins(hostId, worktreeId).then((loaded) => {
       if (!cancelled) {
-        // Why: a pin tapped before the read landed must not be clobbered by it.
-        setPins((current) =>
+        const current = pinsRef.current
+        const next =
           current.scopeKey === scopeKey
             ? { scopeKey, overrides: { ...loaded, ...current.overrides } }
             : { scopeKey, overrides: loaded }
-        )
+        pinsRef.current = next
+        setPins(next)
       }
     })
     return () => {

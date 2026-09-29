@@ -144,6 +144,34 @@ describe('useMobileSessionTabPins', () => {
     }
   )
 
+  it.each([0, 1])('keeps loaded pins when tab %i is tapped before hydration commits', async (index) => {
+    await AsyncStorage.setItem('orca:sessionTabPins:host:folder', '{"a":true}')
+    let finishRead: (value: string | null) => void = () => {}
+    vi.mocked(AsyncStorage.getItem).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishRead = resolve
+        })
+    )
+    await act(async () => {
+      renderer = create(createElement(Harness))
+    })
+    await act(async () => {
+      finishRead('{"a":true}')
+      await Promise.resolve()
+      await Promise.resolve()
+      model.toggleTabPin(tabs[index]!)
+    })
+    expect(model!.isTabPinned(tabs[0]!)).toBe(index !== 0)
+    expect(model!.isTabPinned(tabs[1]!)).toBe(index === 1)
+    expect(model!.orderedTabs.filter((tab) => tab.isPinned).map((tab) => tab.id)).toEqual(
+      index === 0 ? [] : ['a', 'b']
+    )
+    expect(await AsyncStorage.getItem('orca:sessionTabPins:host:folder')).toBe(
+      index === 0 ? '{"a":false}' : '{"a":true,"b":true}'
+    )
+  })
+
   it('keeps rapid pin/unpin writes ordered across remounts', async () => {
     await act(async () => {
       renderer = create(createElement(Harness))
