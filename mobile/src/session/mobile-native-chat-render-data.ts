@@ -57,11 +57,28 @@ export function foldMobileNativeChatMessages(messages: NativeChatMessage[]): Nat
   return stripNoiseMessages(foldToolMessages(normalizeImageTranscriptMessages(messages)))
 }
 
+/** The tail's text blocks collapse into the longer streamed text at the first
+ *  text block's position; tool and image blocks keep their places. */
+function withStreamedText(message: NativeChatMessage, streaming: string): NativeChatMessage {
+  const blocks: NativeChatMessage['blocks'] = []
+  let placed = false
+  for (const block of message.blocks) {
+    if (block.type !== 'text') {
+      blocks.push(block)
+    } else if (!placed) {
+      blocks.push({ type: 'text', text: streaming })
+      placed = true
+    }
+  }
+  return { ...message, blocks }
+}
+
 /** Assemble the folded transcript, streaming text, and optimistic user echoes. */
 export function buildMobileNativeChatTransientData({
   messages,
   folded,
   streaming,
+  streamingExtendsMessageId = null,
   pending,
   imagePreviewsByMessageId
 }: {
@@ -70,6 +87,8 @@ export function buildMobileNativeChatTransientData({
   folded: NativeChatMessage[]
   /** Streaming bubble text, already gated by `deriveMobileNativeChatStreaming`. */
   streaming: string | null
+  /** Folded tail the streaming text continues (from the same gate). */
+  streamingExtendsMessageId?: string | null
   pending: MobileNativeChatPendingItem[]
   imagePreviewsByMessageId?: Record<string, string[]>
 }): { folded: NativeChatMessage[]; streaming: string | null; data: NativeChatMessage[] } {
@@ -171,15 +190,25 @@ export function buildMobileNativeChatTransientData({
     }
   }
 
+  // Grow the partial tail in place under its own key: a second bubble repeating
+  // its words came and went with every catch-up, bouncing the list's bottom.
+  const extendedTail =
+    streaming && streamingExtendsMessageId !== null
+      ? renderedFolded.at(-1)?.id === streamingExtendsMessageId
+        ? renderedFolded.at(-1)
+        : undefined
+      : undefined
   const data: NativeChatMessage[] = [...leadingPending]
   for (const message of renderedFolded) {
-    data.push(message)
+    data.push(
+      message === extendedTail && streaming ? withStreamedText(message, streaming) : message
+    )
     const attached = anchoredPending.get(message.id)
     if (attached) {
       data.push(...attached)
     }
   }
-  if (streaming) {
+  if (streaming && !extendedTail) {
     data.push({
       id: 'streaming',
       role: 'assistant',

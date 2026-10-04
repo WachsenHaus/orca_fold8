@@ -175,4 +175,30 @@ describe('useMobileNativeChatTailFollow', () => {
 
     expect(scrollToOffset).toHaveBeenCalledOnce()
   })
+
+  it('hands a fling back to the user even after its release resumed following', async () => {
+    const follow = await mount()
+    const atBottom = {
+      nativeEvent: {
+        contentOffset: { x: 0, y: 580 },
+        contentSize: { width: 320, height: 1_200 },
+        layoutMeasurement: { width: 320, height: 600 }
+      }
+    } as Parameters<typeof follow.endUserDrag>[0]
+
+    act(() => follow.beginUserScroll())
+    act(() => follow.endUserDrag(atBottom))
+    await flushFrames(16)
+    scrollToEnd.mockClear()
+    scrollToOffset.mockClear()
+
+    act(() => follow.beginMomentum())
+    act(() => follow.pinToTailAfterContentResize(320, 1_260))
+    await flushFrames()
+    expect(scrollToOffset).not.toHaveBeenCalled()
+
+    act(() => follow.endMomentum(atBottom))
+    act(() => follow.pinToTailAfterContentResize(320, 1_320))
+    expect(scrollToOffset).toHaveBeenCalledWith({ animated: false, offset: 1_320 })
+  })
 })

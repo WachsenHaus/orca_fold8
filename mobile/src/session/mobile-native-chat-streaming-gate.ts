@@ -81,7 +81,14 @@ export function deriveMobileNativeChatStreaming(
      *  observation this render", not "the stream ended". */
     streamLive?: boolean
   } = {}
-): { gate: MobileNativeChatStreamingGate; streaming: string | null } {
+): {
+  gate: MobileNativeChatStreamingGate
+  streaming: string | null
+  /** Id of the transcript tail this stream continues, when the tail landed mid-
+   *  segment with only part of the reply. The list then grows that row in place
+   *  instead of rendering the same words twice. */
+  extendsMessageId: string | null
+} {
   const scopeKey = options.scopeKey === undefined ? gate.scopeKey : options.scopeKey
   const scopedGate =
     gate.scopeKey === scopeKey ? gate : createMobileNativeChatStreamingGate(scopeKey)
@@ -97,18 +104,28 @@ export function deriveMobileNativeChatStreaming(
     // gate that has never anchored — mounted mid-turn, the first real tail it
     // sees is the best pre-stream history it will ever get.
     const canAnchor = tailId !== null && (!options.streamLive || scopedGate.baselineTailId === null)
-    return { gate: canAnchor ? advanceGate(scopedGate, '', tailId) : scopedGate, streaming: null }
+    return {
+      gate: canAnchor ? advanceGate(scopedGate, '', tailId) : scopedGate,
+      streaming: null,
+      extendsMessageId: null
+    }
   }
   // A stream that is not an extension of the previous tick is a new segment
   // (next reply part); re-anchor to the tail that predates it.
   const segmentStart = scopedGate.prevText !== '' && !text.startsWith(scopedGate.prevText)
   const baselineTailId = segmentStart ? tailId : scopedGate.baselineTailId
-  const tailLeadsWithStream = assistantTailText(tail).startsWith(text)
+  const tailText = assistantTailText(tail)
+  const tailMoved = tailId !== baselineTailId
   // A null baseline (text on the very first tick, no tail ever seen) is unequal
   // to every real tail id, so this degrades to the legacy suppress-on-prefix rule.
-  const caughtUp = tailLeadsWithStream && tailId !== baselineTailId
+  const caughtUp = tailMoved && tailText.startsWith(text)
+  // Why: a transcript that lands the reply in pieces left the partial tail AND
+  // the full bubble on screen; each catch-up then removed the bubble and the next
+  // tick restored it, so the list bounced by a whole bubble at the bottom.
+  const extendsTail = !caughtUp && tailMoved && tailText !== '' && text.startsWith(tailText)
   return {
     gate: advanceGate(scopedGate, text, baselineTailId),
-    streaming: caughtUp ? null : text
+    streaming: caughtUp ? null : text,
+    extendsMessageId: extendsTail ? tailId : null
   }
 }

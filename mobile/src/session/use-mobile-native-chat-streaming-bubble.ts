@@ -10,13 +10,14 @@ import {
  *  the previous turn's prefix still shows while streaming. Call this from a
  *  component that outlives the chat list itself: the baseline has to survive the
  *  view toggles that unmount it, or the next segment reverts to prefix-matching.
- *  `streamLive` keeps those textless gaps from reading as an idle stream. */
+ *  `streamLive` keeps those textless gaps from reading as an idle stream.
+ *  `extendsMessageId` names a partial transcript tail the text continues. */
 export function useMobileNativeChatStreamingBubble(
   folded: readonly NativeChatMessage[],
   streamingText: string | undefined,
   scopeKey: string,
   streamLive: boolean
-): string | null {
+): { streaming: string | null; extendsMessageId: string | null } {
   const [gate, setGate] = useState(() => createMobileNativeChatStreamingGate(scopeKey))
   const step = deriveMobileNativeChatStreaming(gate, folded, streamingText, {
     scopeKey,
@@ -27,5 +28,5 @@ export function useMobileNativeChatStreamingBubble(
     // idempotent for a repeated (text, tail) pair, so this settles in one pass.
     setGate(step.gate)
   }
-  return step.streaming
+  return { streaming: step.streaming, extendsMessageId: step.extendsMessageId }
 }

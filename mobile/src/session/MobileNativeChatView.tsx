@@ -72,6 +72,8 @@ type Props = {
   /** Live partial assistant text to show as an in-progress bubble, already gated
    *  by the overlay against the transcript catching up. */
   streaming: string | null
+  /** Transcript row the streaming text continues; grown in place, not duplicated. */
+  streamingExtendsMessageId?: string | null
   hasMore?: boolean
   loadingEarlier?: boolean
   onLoadEarlier?: () => void
@@ -153,6 +155,7 @@ export function MobileNativeChatView({
   settledTurns,
   onStop,
   streaming,
+  streamingExtendsMessageId = null,
   hasMore,
   loadingEarlier,
   onLoadEarlier,
@@ -208,10 +211,11 @@ export function MobileNativeChatView({
         messages,
         folded,
         streaming,
+        streamingExtendsMessageId,
         pending,
         imagePreviewsByMessageId
       }),
-    [messages, folded, streaming, pending, imagePreviewsByMessageId]
+    [messages, folded, streaming, streamingExtendsMessageId, pending, imagePreviewsByMessageId]
   )
   const subagentLabels = useMemo(() => nativeChatSubagentLabels(messages), [messages])
   const {

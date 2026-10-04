@@ -429,4 +429,31 @@ describe('buildMobileNativeChatTransientData anchoring', () => {
     })
     expect(data.map((message) => message.id)).toEqual(['a1', 'prompt', 'p1', 'a2'])
   })
+
+  describe('buildMobileNativeChatTransientData streaming over a partial tail', () => {
+    it('grows the partial tail in place instead of adding a duplicate bubble', () => {
+      const messages = [user('u1', 'go'), assistant('a1', 'The tests')]
+      const { data } = buildMobileNativeChatTransientData({
+        messages,
+        folded: foldMobileNativeChatMessages(messages),
+        streaming: 'The tests pass now',
+        streamingExtendsMessageId: 'a1',
+        pending: []
+      })
+      expect(data.map((m) => m.id)).toEqual(['u1', 'a1'])
+      expect(data[1].blocks).toEqual([{ type: 'text', text: 'The tests pass now' }])
+    })
+
+    it('still appends the bubble when the named row is no longer the tail', () => {
+      const messages = [assistant('a1', 'The tests'), user('u2', 'next')]
+      const { data } = buildMobileNativeChatTransientData({
+        messages,
+        folded: foldMobileNativeChatMessages(messages),
+        streaming: 'The tests pass now',
+        streamingExtendsMessageId: 'a1',
+        pending: []
+      })
+      expect(data.map((m) => m.id)).toEqual(['a1', 'u2', 'streaming'])
+    })
+  })
 })

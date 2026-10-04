@@ -206,11 +206,15 @@ export function useMobileNativeChatTailFollow<TItem>(args: {
     [clearUserScrollSettle, finishUserScroll]
   )
 
+  // Only a fling has momentum; pins are never animated. When the release frame
+  // already resumed following, the fling and the tail pins fought each other at
+  // the bottom, so a fling always hands the scroll back to the user.
   const beginMomentum = useCallback(() => {
-    if (userScrollActiveRef.current) {
-      clearUserScrollSettle()
-    }
-  }, [clearUserScrollSettle])
+    clearUserScrollSettle()
+    clearSettlePin()
+    userScrollActiveRef.current = true
+    setFollowing(false)
+  }, [clearUserScrollSettle, clearSettlePin, setFollowing])
 
   const endMomentum = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) =>

@@ -270,4 +270,38 @@ describe('deriveMobileNativeChatStreaming', () => {
     ])
     expect(results).toEqual([null, 'Hello', null])
   })
+
+  describe('deriveMobileNativeChatStreaming partial tails', () => {
+    it('names a partial tail the stream continues, then hides once it catches up', () => {
+      let gate = createMobileNativeChatStreamingGate()
+      const prompt = [{ ...assistant('u1', 'go'), role: 'user' as const }]
+      gate = deriveMobileNativeChatStreaming(gate, prompt, undefined).gate
+      gate = deriveMobileNativeChatStreaming(gate, prompt, 'The tests', { streamLive: true }).gate
+
+      const partial = [...prompt, assistant('a1', 'The tests')]
+      const growing = deriveMobileNativeChatStreaming(gate, partial, 'The tests pass now', {
+        streamLive: true
+      })
+      expect(growing.streaming).toBe('The tests pass now')
+      expect(growing.extendsMessageId).toBe('a1')
+
+      const landed = [...prompt, assistant('a1', 'The tests pass now')]
+      const done = deriveMobileNativeChatStreaming(growing.gate, landed, 'The tests pass now', {
+        streamLive: true
+      })
+      expect(done.streaming).toBeNull()
+      expect(done.extendsMessageId).toBeNull()
+    })
+
+    it('never extends the previous turn that predates the stream', () => {
+      let gate = createMobileNativeChatStreamingGate()
+      const prior = [assistant('a0', 'The tests')]
+      gate = deriveMobileNativeChatStreaming(gate, prior, undefined).gate
+      const step = deriveMobileNativeChatStreaming(gate, prior, 'The tests pass now', {
+        streamLive: true
+      })
+      expect(step.streaming).toBe('The tests pass now')
+      expect(step.extendsMessageId).toBeNull()
+    })
+  })
 })
