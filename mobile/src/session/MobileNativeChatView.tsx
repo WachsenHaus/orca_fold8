@@ -376,87 +376,96 @@ export function MobileNativeChatView({
           ) : null}
         </GestureHandlerRootView>
       )}
-      <MobileNativeChatPromptCard
-        ask={ask}
-        askKey={askKey}
-        onDismissAsk={onDismissAsk}
-        onAnswerAsk={onAnswerAsk}
-        onCancelAsk={onCancelAsk}
-        onCancelPrompt={onCancelPrompt}
-        permission={permission}
-        onRespondPermission={onRespondPermission}
-        question={question}
-        onAnswerQuestion={onAnswerQuestion}
-      />
-      <View style={styles.chromeRow}>
-        <View style={styles.chromeLeft}>
-          {agentWorking && !structuredActivityUi ? <MobileAgentWorkingIndicator /> : null}
-          <Pressable
-            style={({ pressed }) => [styles.chromeToggle, pressed && styles.pressed]}
-            onPress={() => setToolsExpanded((v) => !v)}
-            hitSlop={8}
-          >
-            {toolsExpanded ? (
-              <ChevronsDownUp size={14} color={colors.textMuted} strokeWidth={2} />
-            ) : (
-              <ChevronsUpDown size={14} color={colors.textMuted} strokeWidth={2} />
-            )}
-            <Text style={styles.chromeToggleLabel}>{toolsExpanded ? 'Collapse' : 'Tools'}</Text>
-          </Pressable>
+      <View style={styles.column}>
+        <MobileNativeChatPromptCard
+          ask={ask}
+          askKey={askKey}
+          onDismissAsk={onDismissAsk}
+          onAnswerAsk={onAnswerAsk}
+          onCancelAsk={onCancelAsk}
+          onCancelPrompt={onCancelPrompt}
+          permission={permission}
+          onRespondPermission={onRespondPermission}
+          question={question}
+          onAnswerQuestion={onAnswerQuestion}
+        />
+        <View style={styles.chromeRow}>
+          <View style={styles.chromeLeft}>
+            {agentWorking && !structuredActivityUi ? <MobileAgentWorkingIndicator /> : null}
+            <Pressable
+              style={({ pressed }) => [styles.chromeToggle, pressed && styles.pressed]}
+              onPress={() => setToolsExpanded((v) => !v)}
+              hitSlop={8}
+            >
+              {toolsExpanded ? (
+                <ChevronsDownUp size={14} color={colors.textMuted} strokeWidth={2} />
+              ) : (
+                <ChevronsUpDown size={14} color={colors.textMuted} strokeWidth={2} />
+              )}
+              <Text style={styles.chromeToggleLabel}>{toolsExpanded ? 'Collapse' : 'Tools'}</Text>
+            </Pressable>
+          </View>
+          {canStop ? (
+            <Pressable
+              style={({ pressed }) => [styles.stopButton, pressed && styles.pressed]}
+              onPress={onStop}
+              hitSlop={8}
+              accessibilityLabel="Stop the agent"
+            >
+              <Square
+                size={13}
+                color={colors.statusRed}
+                strokeWidth={2.4}
+                fill={colors.statusRed}
+              />
+              <Text style={styles.stopLabel}>Stop</Text>
+            </Pressable>
+          ) : null}
         </View>
-        {canStop ? (
-          <Pressable
-            style={({ pressed }) => [styles.stopButton, pressed && styles.pressed]}
-            onPress={onStop}
-            hitSlop={8}
-            accessibilityLabel="Stop the agent"
+        {sendErrorMessage ? (
+          // This banner is the only channel for a send failure — announce it.
+          <View
+            style={styles.sendError}
+            accessibilityRole="alert"
+            accessibilityLiveRegion="assertive"
           >
-            <Square size={13} color={colors.statusRed} strokeWidth={2.4} fill={colors.statusRed} />
-            <Text style={styles.stopLabel}>Stop</Text>
-          </Pressable>
+            <Text style={styles.sendErrorText}>{sendErrorMessage}</Text>
+          </View>
         ) : null}
+        <MobileNativeChatComposer
+          structuredCommands={
+            structuredActivityUi
+              ? (sessionOptions?.controller.conversationCommands ?? [])
+              : undefined
+          }
+          value={composerText}
+          onChangeText={onComposerTextChange}
+          onSend={handleSend}
+          sendSurfaceId={sendSurfaceId}
+          {...{ getSendCompletionGeneration, getComposerEditGeneration }}
+          agent={agent}
+          sessionOptions={sessionOptions}
+          onAttachImage={onAttachImage}
+          attachments={attachments}
+          onRemoveAttachment={onRemoveAttachment}
+          isAttaching={isAttaching}
+          onMicPress={onMicPress}
+          micActive={micActive}
+          dictationMode={dictationMode}
+          onMicPressIn={onMicPressIn}
+          onMicPressOut={onMicPressOut}
+          disabled={lockReason !== null}
+          placeholder={
+            lockReason === 'disconnected'
+              ? 'Reconnecting…'
+              : lockReason === 'waiting'
+                ? 'Waiting for terminal…'
+                : 'Message, @files, /commands'
+          }
+          filePaths={filePaths}
+          onNeedFiles={onNeedFiles}
+        />
       </View>
-      {sendErrorMessage ? (
-        // This banner is the only channel for a send failure — announce it.
-        <View
-          style={styles.sendError}
-          accessibilityRole="alert"
-          accessibilityLiveRegion="assertive"
-        >
-          <Text style={styles.sendErrorText}>{sendErrorMessage}</Text>
-        </View>
-      ) : null}
-      <MobileNativeChatComposer
-        structuredCommands={
-          structuredActivityUi ? (sessionOptions?.controller.conversationCommands ?? []) : undefined
-        }
-        value={composerText}
-        onChangeText={onComposerTextChange}
-        onSend={handleSend}
-        sendSurfaceId={sendSurfaceId}
-        {...{ getSendCompletionGeneration, getComposerEditGeneration }}
-        agent={agent}
-        sessionOptions={sessionOptions}
-        onAttachImage={onAttachImage}
-        attachments={attachments}
-        onRemoveAttachment={onRemoveAttachment}
-        isAttaching={isAttaching}
-        onMicPress={onMicPress}
-        micActive={micActive}
-        dictationMode={dictationMode}
-        onMicPressIn={onMicPressIn}
-        onMicPressOut={onMicPressOut}
-        disabled={lockReason !== null}
-        placeholder={
-          lockReason === 'disconnected'
-            ? 'Reconnecting…'
-            : lockReason === 'waiting'
-              ? 'Waiting for terminal…'
-              : 'Message, @files, /commands'
-        }
-        filePaths={filePaths}
-        onNeedFiles={onNeedFiles}
-      />
     </View>
   )
 }

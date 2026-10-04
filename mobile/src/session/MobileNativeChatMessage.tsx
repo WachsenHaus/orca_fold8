@@ -26,8 +26,8 @@ function Prose({
   onOpenFile?: (relativePath: string) => void
 }): React.JSX.Element | null {
   if (isTextBlock(block)) {
-    // Inverted (user) bubbles use a fixed dark-on-light text rather than the
-    // markdown renderer's light-on-dark palette.
+    // User bubbles use plain text on a raised surface rather than the
+    // markdown renderer, so what was typed reads back verbatim.
     if (invert) {
       return (
         <Text selectable style={[styles.userText, { fontSize: TEXT_SIZE * fontScale }]}>
@@ -104,7 +104,7 @@ function MobileNativeChatMessageImpl({
   const isReasoning = message.role === 'reasoning'
   // Separate the agent's words from its tool activity: prose renders first, the
   // tool calls fold into a collapsible run beneath. The user's own messages get
-  // an inverted (filled accent) bubble so they stand apart from agent prose.
+  // a raised bubble so they stand apart from agent prose.
   const { prose, tools } = splitNativeChatBlocks(message.blocks)
   const activeCall = structuredActivityUi
     ? selectActiveToolCall(tools, { activeTurnIsWorking })

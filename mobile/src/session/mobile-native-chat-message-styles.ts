@@ -18,13 +18,15 @@ export const styles = StyleSheet.create({
   },
   userBubble: {
     maxWidth: '88%',
-    backgroundColor: colors.textPrimary,
+    backgroundColor: colors.bgRaised,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.borderSubtle,
     borderRadius: radii.card,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm
   },
   userText: {
-    color: colors.bgBase,
+    color: colors.textPrimary,
     fontSize: TEXT_SIZE,
     lineHeight: TEXT_SIZE + 6,
     fontWeight: '500'

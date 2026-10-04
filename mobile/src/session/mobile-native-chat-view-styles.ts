@@ -1,7 +1,15 @@
 import { StyleSheet } from 'react-native'
 import { colors, spacing, typography } from '../theme/mobile-theme'
 
+/** Readable line length on the unfolded Fold screen; narrower screens are unaffected. */
+const CHAT_COLUMN_MAX_WIDTH = 820
+
 export const styles = StyleSheet.create({
+  column: {
+    width: '100%',
+    maxWidth: CHAT_COLUMN_MAX_WIDTH,
+    alignSelf: 'center'
+  },
   root: {
     flex: 1,
     backgroundColor: colors.bgBase
@@ -59,6 +67,9 @@ export const styles = StyleSheet.create({
     position: 'relative'
   },
   listContent: {
+    width: '100%',
+    maxWidth: CHAT_COLUMN_MAX_WIDTH,
+    alignSelf: 'center',
     paddingVertical: spacing.sm,
     flexGrow: 1
   },
