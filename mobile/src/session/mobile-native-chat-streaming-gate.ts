@@ -103,6 +103,25 @@ export function deriveMobileNativeChatStreaming(
     // bubble; a torn-down transcript carries no tail at all. The exception is a
     // gate that has never anchored — mounted mid-turn, the first real tail it
     // sees is the best pre-stream history it will ever get.
+    // Why: the stream text ends with the turn, often before the transcript lands
+    // the reply. Dropping the bubble then shrank the list by the whole reply and
+    // the landing grew it back, so a finished answer bounced at the bottom. Hold
+    // the last text while the tail is still the pre-stream one, or a partial
+    // reply it continues, until the transcript catches up or moves elsewhere.
+    const held = scopedGate.prevText
+    if (held !== '') {
+      const tailText = assistantTailText(tail)
+      const tailMoved = tailId !== scopedGate.baselineTailId
+      const extendsTail =
+        tailMoved && tailText !== '' && held.startsWith(tailText) && tailText !== held
+      if ((!tailMoved && tailId !== null) || extendsTail) {
+        return {
+          gate: scopedGate,
+          streaming: held,
+          extendsMessageId: extendsTail ? tailId : null
+        }
+      }
+    }
     const canAnchor = tailId !== null && (!options.streamLive || scopedGate.baselineTailId === null)
     return {
       gate: canAnchor ? advanceGate(scopedGate, '', tailId) : scopedGate,

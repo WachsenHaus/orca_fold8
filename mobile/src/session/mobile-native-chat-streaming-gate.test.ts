@@ -304,4 +304,41 @@ describe('deriveMobileNativeChatStreaming', () => {
       expect(step.extendsMessageId).toBeNull()
     })
   })
+
+  describe('deriveMobileNativeChatStreaming after the turn ends', () => {
+    it('holds the finished reply until the transcript lands it', () => {
+      const prior = [assistant('a1', 'earlier')]
+      const landed = [...prior, assistant('a2', 'final answer')]
+      const { results } = run([
+        { folded: prior },
+        { folded: prior, text: 'final answer', live: true },
+        { folded: prior }, // turn ended, transcript not there yet
+        { folded: prior },
+        { folded: landed }
+      ])
+      expect(results).toEqual([null, 'final answer', 'final answer', 'final answer', null])
+    })
+
+    it('keeps growing a partial tail in place until it catches up', () => {
+      const prior = [assistant('a1', 'earlier')]
+      const partial = [...prior, assistant('a2', 'final')]
+      let gate = createMobileNativeChatStreamingGate()
+      gate = deriveMobileNativeChatStreaming(gate, prior, undefined).gate
+      gate = deriveMobileNativeChatStreaming(gate, prior, 'final answer', { streamLive: true }).gate
+      const step = deriveMobileNativeChatStreaming(gate, partial, undefined)
+      expect(step.streaming).toBe('final answer')
+      expect(step.extendsMessageId).toBe('a2')
+    })
+
+    it('lets go once the tail moves to something the reply is not', () => {
+      const prior = [assistant('a1', 'earlier')]
+      const moved = [...prior, { ...assistant('u2', 'next question'), role: 'user' as const }]
+      const { results } = run([
+        { folded: prior },
+        { folded: prior, text: 'final answer', live: true },
+        { folded: moved }
+      ])
+      expect(results).toEqual([null, 'final answer', null])
+    })
+  })
 })
