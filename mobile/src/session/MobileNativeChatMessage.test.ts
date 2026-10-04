@@ -355,4 +355,29 @@ describe("MobileNativeChatMessage — a subagent's row speaks as that subagent",
     act(() => renderer?.unmount())
     expect(captions(renderToolOnly(true))).toHaveLength(1)
   })
+
+  it('takes no space at all when a settled row has nothing left to show', () => {
+    const toolOnly: NativeChatMessage = {
+      id: 'a3',
+      role: 'assistant',
+      blocks: [{ type: 'tool-call', name: 'Grep', input: {}, state: 'completed' }],
+      timestamp: null,
+      source: 'transcript'
+    }
+    const renderToolOnly = (activeTurnIsWorking: boolean): ReactTestRenderer => {
+      act(() => {
+        renderer = create(
+          createElement(MobileNativeChatMessage, {
+            message: toolOnly,
+            structuredActivityUi: true,
+            activeTurnIsWorking
+          })
+        )
+      })
+      return renderer!
+    }
+    expect(renderToolOnly(false).toJSON()).toBeNull()
+    act(() => renderer?.unmount())
+    expect(renderToolOnly(true).toJSON()).not.toBeNull()
+  })
 })

@@ -99,7 +99,7 @@ function MobileNativeChatMessageImpl({
   structuredActivityUi?: boolean
   /** The roster's name for the subagent that wrote this row, when one names it. */
   subagentLabel?: string
-}): React.JSX.Element {
+}): React.JSX.Element | null {
   const isUser = message.role === 'user'
   const isReasoning = message.role === 'reasoning'
   // Separate the agent's words from its tool activity: prose renders first, the
@@ -126,6 +126,13 @@ function MobileNativeChatMessageImpl({
     isUser || agentJournalItemSubagentId(message) === null || (prose.length === 0 && !showToolRun)
       ? null
       : (subagentLabel ?? NATIVE_CHAT_SUBAGENT_ATTRIBUTION_COPY.unnamed)
+
+  // Why: a settled tool-only row still painted its padding as a blank strip.
+  // Codex streams such rows and then folds them away, so the strips came and
+  // went at the tail and the whole transcript bobbed by one row's padding.
+  if (prose.length === 0 && !showToolRun && !turnStatus) {
+    return null
+  }
 
   return (
     <>
