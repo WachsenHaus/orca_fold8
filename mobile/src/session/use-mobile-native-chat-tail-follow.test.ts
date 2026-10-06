@@ -201,4 +201,14 @@ describe('useMobileNativeChatTailFollow', () => {
     act(() => follow.pinToTailAfterContentResize(320, 1_320))
     expect(scrollToOffset).toHaveBeenCalledWith({ animated: false, offset: 1_320 })
   })
+
+  it('anchors the row being read with one stable list config across renders', async () => {
+    const follow = await mount()
+    expect(follow.listProps.maintainVisibleContentPosition).toEqual({ minIndexForVisible: 0 })
+    // A scroll gesture re-renders the hook; a new anchor object would reset it natively.
+    act(() => follow.listProps.onScrollBeginDrag())
+    expect(tail!.listProps.maintainVisibleContentPosition).toBe(
+      follow.listProps.maintainVisibleContentPosition
+    )
+  })
 })

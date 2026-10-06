@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import type { FlatList, NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
 import { SCROLL_COMMAND_PRECEDES_MOUNT } from './native-chat-scroll-mount-order'
 
@@ -7,6 +7,9 @@ const AT_TAIL_SLOP = 80
 
 /** Frames to wait before the settle pin, so the grown content is mounted first. */
 const SETTLE_PIN_FRAMES = 2
+
+// Stable identity: a fresh object each render resets the native anchor.
+const MAINTAIN_READING_POSITION = { minIndexForVisible: 0 } as const
 
 function isAtTail(event: NativeScrollEvent): boolean {
   const { contentOffset, contentSize, layoutMeasurement } = event
@@ -31,6 +34,16 @@ export type MobileNativeChatTailFollow<TItem> = {
   /** Leave the tail deliberately, e.g. before prepending older history. */
   detachFromTail: () => void
   recordScrollMetrics: (event: NativeScrollEvent) => void
+  /** Spread onto the list: gesture/resize wiring plus the reading-position anchor. */
+  listProps: {
+    maintainVisibleContentPosition: typeof MAINTAIN_READING_POSITION
+    onScrollBeginDrag: () => void
+    onScrollEndDrag: (event: NativeSyntheticEvent<NativeScrollEvent>) => void
+    onMomentumScrollBegin: () => void
+    onMomentumScrollEnd: (event: NativeSyntheticEvent<NativeScrollEvent>) => void
+    onContentSizeChange: (width: number, height: number) => void
+    onLayout: () => void
+  }
 }
 
 /** Sole owner of transcript scroll position.
@@ -238,6 +251,28 @@ export function useMobileNativeChatTailFollow<TItem>(args: {
     [clearUserScrollSettle, clearSettlePin]
   )
 
+  const listProps = useMemo(
+    () => ({
+      // Hold the row being read still while older pages prepend or rows above it
+      // re-measure; without this a scrolled-up reader is thrown up and down.
+      maintainVisibleContentPosition: MAINTAIN_READING_POSITION,
+      onScrollBeginDrag: beginUserScroll,
+      onScrollEndDrag: endUserDrag,
+      onMomentumScrollBegin: beginMomentum,
+      onMomentumScrollEnd: endMomentum,
+      onContentSizeChange: pinToTailAfterContentResize,
+      onLayout: pinToTail
+    }),
+    [
+      beginUserScroll,
+      endUserDrag,
+      beginMomentum,
+      endMomentum,
+      pinToTailAfterContentResize,
+      pinToTail
+    ]
+  )
+
   return {
     listRef,
     showJumpToTail: !following && !atTail,
@@ -249,6 +284,7 @@ export function useMobileNativeChatTailFollow<TItem>(args: {
     beginMomentum,
     endMomentum,
     detachFromTail,
-    recordScrollMetrics
+    recordScrollMetrics,
+    listProps
   }
 }

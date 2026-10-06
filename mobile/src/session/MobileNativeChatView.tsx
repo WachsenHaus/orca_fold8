@@ -218,19 +218,8 @@ export function MobileNativeChatView({
     [messages, folded, streaming, streamingExtendsMessageId, pending, imagePreviewsByMessageId]
   )
   const subagentLabels = useMemo(() => nativeChatSubagentLabels(messages), [messages])
-  const {
-    listRef,
-    showJumpToTail,
-    pinToTail,
-    pinToTailAfterContentResize,
-    jumpToTail,
-    beginUserScroll,
-    endUserDrag,
-    beginMomentum,
-    endMomentum,
-    detachFromTail,
-    recordScrollMetrics
-  } = useMobileNativeChatTailFollow<NativeChatMessage>({ hasItems: data.length > 0 })
+  const { listRef, showJumpToTail, jumpToTail, detachFromTail, recordScrollMetrics, listProps } =
+    useMobileNativeChatTailFollow<NativeChatMessage>({ hasItems: data.length > 0 })
 
   const handleSend = useCallback(
     async (text: string): Promise<boolean> => {
@@ -320,14 +309,9 @@ export function MobileNativeChatView({
               // Let link/file taps land while the composer keyboard is up
               // instead of being swallowed by the dismiss gesture.
               keyboardShouldPersistTaps="handled"
+              {...listProps}
               onScroll={onScroll}
-              onScrollBeginDrag={beginUserScroll}
-              onScrollEndDrag={endUserDrag}
-              onMomentumScrollBegin={beginMomentum}
-              onMomentumScrollEnd={endMomentum}
               scrollEventThrottle={32}
-              onContentSizeChange={pinToTailAfterContentResize}
-              onLayout={pinToTail}
               ListHeaderComponent={
                 hasMore ? (
                   <Pressable
